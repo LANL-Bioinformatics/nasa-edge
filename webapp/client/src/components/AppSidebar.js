@@ -30,10 +30,10 @@ const AppSidebar = () => {
       <CSidebarHeader>
         <CSidebarBrand to="/">
           <span className="sidebar-brand-full">
-            <img alt="logo" style={{ width: 150, height: 50 }} src={logo} />
+            <img alt="logo" style={{ width: 100, height: 48 }} src={logo} />
           </span>
           <span className="sidebar-brand-narrow">
-            <img alt="logo" style={{ width: 20, height: 20 }} src={logo} />
+            <img alt="logo" style={{ width: 10, height: 10 }} src={logo} />
           </span>
         </CSidebarBrand>
       </CSidebarHeader>

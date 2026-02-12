@@ -1,0 +1,12 @@
+**/__pycache__/*
+.nextflow*
+**/work/**
+*/logs/*
+**/ec_info/*
+.nf-test*
+.DS_Store
+.env
+io
+node_modules
+webapp/server/package-lock.json
+imports.zip

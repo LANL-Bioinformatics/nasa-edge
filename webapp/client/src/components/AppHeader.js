@@ -54,7 +54,7 @@ const AppHeader = () => {
       <CContainer className="border-bottom px-4" fluid>
         {!sidebarShow && (
           <CHeaderBrand className="sidebar-brand-narrow" to="/">
-            <img alt="logo" style={{ width: 150, height: 50 }} src={logo} />
+            <img alt="logo" style={{ width: 100, height: 48 }} src={logo} />
           </CHeaderBrand>
         )}
         <CHeaderToggler
