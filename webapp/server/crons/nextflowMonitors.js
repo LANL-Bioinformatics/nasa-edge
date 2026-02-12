@@ -79,16 +79,23 @@ const nextflowWorkflowMonitor = async () => {
       'Generate nextflow.config',
     )
     logger.info('Generate nextflow.config')
-    await generateInputs(projHome, projectConf, proj)
-    // submit workflow to nextflow
-    const now = new Date()
-    common.write2log(
-      `${config.IO.PROJECT_BASE_DIR}/${proj.code}/log.txt`,
-      `[${now.toLocaleString()}] Submit workflow to nextflow`,
-    )
-    logger.info('Submit workflow to nextflow')
-    submitWorkflow(proj, projectConf, inputsize)
-    logger.info('Done workflow submission')
+    try {
+      await generateInputs(projHome, projectConf, proj)
+      // submit workflow to nextflow
+      const now = new Date()
+      common.write2log(
+        `${config.IO.PROJECT_BASE_DIR}/${proj.code}/log.txt`,
+        `[${now.toLocaleString()}] Submit workflow to nextflow`,
+      )
+      logger.info('Submit workflow to nextflow')
+      submitWorkflow(proj, projectConf, inputsize)
+      logger.info('Done workflow submission')
+    } catch (err) {
+      // fail project
+      proj.status = 'failed'
+      await proj.save()
+      throw err
+    }
   } catch (err) {
     logger.error(`nextflowWorkflowMonitor failed:${err}`)
   }

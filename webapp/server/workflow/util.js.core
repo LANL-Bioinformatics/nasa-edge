@@ -27,6 +27,7 @@ const generateNextflowWorkflowParams = async (projHome, projectConf, proj) => {
     // download sra data to shared directory
     params.sraOutdir = config.IO.SRA_BASE_DIR
   }
+
   return params
 }
 
