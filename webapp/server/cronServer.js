@@ -98,8 +98,13 @@ const runApp = async () => {
   try {
     // Connect to MongoDB
     const db = `mongodb://${config.DATABASE.SERVER_HOST}:${config.DATABASE.SERVER_PORT}/${config.DATABASE.NAME}`
+    const dbOptions = {
+      authSource: "admin",
+      user: config.DATABASE.USERNAME,
+      pass: config.DATABASE.PASSWORD,
+    }
     mongoose.set('strictQuery', false)
-    mongoose.connect(db)
+    mongoose.connect(db, dbOptions)
     logger.info(`Successfully connected to database ${db}`)
     // start server
     app.listen(config.CRON.SERVER_PORT, () =>

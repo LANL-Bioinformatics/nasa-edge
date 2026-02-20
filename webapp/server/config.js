@@ -189,8 +189,6 @@ const config = {
     USERNAME: process.env.DATABASE_USERNAME,
     PASSWORD: process.env.DATABASE_PASSWORD,
     // Name of MongoDB database.
-    // TODO: Update environment variable name to `DATABASE_NAME` to be more similar to other environment variables.
-    //       Note: That will require coordination with the people that manage the various deployments of this app.
     NAME: process.env.DB_NAME || 'edge',
     // Path to directory in which the system will store the database backups it creates.
     BACKUP_DIR: process.env.DATABASE_BACKUP_DIR || path.join(IO_BASE_DIR, 'db'),
