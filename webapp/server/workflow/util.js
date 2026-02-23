@@ -82,46 +82,38 @@ const generateNextflowWorkflowParams = async (projHome, projectConf, proj) => {
     if (projectConf.workflow.input.input_file) {
       const dataPath = path.dirname(projectConf.workflow.input.input_file)
       const csv = fs.readFileSync(projectConf.workflow.input.input_file, 'utf8')
+      const nonEmptyLines = csv
+        .split(/\r?\n/) // 1. Split the string by newlines (\n) and optional carriage returns (\r)
+        .map(line => line.trim()) // 2. Trim leading/trailing whitespace from each line
+        .filter(line => line.length > 0) // 3. Filter out empty strings
       // check if all files exist, and convert to real path for nextflow
-      const newCsv = csv
-        .split(/\r?\n/g)
-        .map((row, index) => {
-          if (index === 0) {
-            // header row
-            return row.split(',')
-          }
-          if (!row.trim()) {
-            // skip empty rows
-            return null
-          }
-
+      const newCsv = []
+      newCsv.push(nonEmptyLines.shift()) // remove header
+      await Promise.all(
+        nonEmptyLines.map(async (row, index) => {
           const cols = row.split(',')
           if (cols.length !== 4 && cols.length !== 5) {
             errMsg += `ERROR: Invalid number of columns in row ${index + 1} of the input csv file. Expected 4 or 5 columns, but got ${cols.length}.\n`
           }
 
-          const filePath1 = getFilePath(dataPath, cols[1], proj.owner)
+          const filePath1 = await getFilePath(dataPath, cols[1], proj.owner)
           if (!filePath1) {
             errMsg += `ERROR: File not found for ${cols[0]} in row ${index + 1}: ${cols[1]}\n`
           }
           if (cols.length === 5) {
-            const filePath2 = getFilePath(dataPath, cols[2], proj.owner)
+            const filePath2 = await getFilePath(dataPath, cols[2], proj.owner)
             if (!filePath2) {
               errMsg += `ERROR: File not found for ${cols[0]} in row ${index + 1}: ${cols[2]}\n`
             }
-            if (errMsg) {
-              return null
-            }
-            return [cols[0], filePath1, filePath2, cols[3], cols[4]]
+            newCsv.push(
+              `${cols[0]},${filePath1},${filePath2},${cols[3]},${cols[4]}`,
+            )
           }
-          if (errMsg) {
-            return null
-          }
-          return [cols[0], filePath1, cols[2], cols[3]]
-        })
-        .filter(item => item !== null)
+          newCsv.push(`${cols[0]},${filePath1},${cols[2]},${cols[3]}`)
+        }),
+      )
 
-      if (!errMsg && newCsv.length === 1) {
+      if (newCsv.length === 1) {
         errMsg += 'ERROR: No valid rows found in the input csv file.\n'
       }
       if (errMsg) {
@@ -129,15 +121,7 @@ const generateNextflowWorkflowParams = async (projHome, projectConf, proj) => {
         throw new Error(errMsg)
       }
       // create csv file in project home
-      await fs.promises.writeFile(
-        `${projHome}/runsheet.csv`,
-        newCsv
-          .map(row => {
-            row = row.join(',')
-            return row
-          })
-          .join('\n'),
-      )
+      await fs.promises.writeFile(`${projHome}/runsheet.csv`, newCsv.join('\n'))
       params.input_file = `${projHome}/runsheet.csv`
     }
   }
@@ -460,7 +444,7 @@ const validateBulkSubmissionInput = async (bulkExcel, type) => {
   )
   // Remove header
   rows.shift()
-  // validate inputs
+  // validate newCsv
   let validInput = true
   let errMsg = ''
   const submissions = []
