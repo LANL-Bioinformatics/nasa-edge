@@ -51,7 +51,8 @@ const abortJob = job => {
 const updateJobStatus = (job, proj) => {
   // process request
   if (pidIsRunning(job.pid)) {
-    // not finished yet
+    // not finished yet, just update the timestamp to put it at the end of the queue
+    job.save();
   } else {
     let status = 'complete'
     let jobStatus = 'Succeeded'
