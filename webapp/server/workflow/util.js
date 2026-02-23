@@ -87,10 +87,11 @@ const generateNextflowWorkflowParams = async (projHome, projectConf, proj) => {
         .map(line => line.trim()) // 2. Trim leading/trailing whitespace from each line
         .filter(line => line.length > 0) // 3. Filter out empty strings
       // check if all files exist, and convert to real path for nextflow
-      const newCsv = []
-      newCsv.push(nonEmptyLines.shift()) // remove header
-      await Promise.all(
+      const newCsv = await Promise.all(
         nonEmptyLines.map(async (row, index) => {
+          if (index === 0) {
+            return row // skip header
+          }
           const cols = row.split(',')
           if (cols.length !== 4 && cols.length !== 5) {
             errMsg += `ERROR: Invalid number of columns in row ${index + 1} of the input csv file. Expected 4 or 5 columns, but got ${cols.length}.\n`
@@ -105,11 +106,10 @@ const generateNextflowWorkflowParams = async (projHome, projectConf, proj) => {
             if (!filePath2) {
               errMsg += `ERROR: File not found for ${cols[0]} in row ${index + 1}: ${cols[2]}\n`
             }
-            newCsv.push(
-              `${cols[0]},${filePath1},${filePath2},${cols[3]},${cols[4]}`,
-            )
+
+            return `${cols[0]},${filePath1},${filePath2},${cols[3]},${cols[4]}`
           }
-          newCsv.push(`${cols[0]},${filePath1},${cols[2]},${cols[3]}`)
+          return `${cols[0]},${filePath1},${cols[2]},${cols[3]}`
         }),
       )
 
