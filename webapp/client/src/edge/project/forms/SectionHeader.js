@@ -22,10 +22,10 @@ export const Header = (props) => {
             data-target="#collapseParameters"
             onClick={props.toggleParms}
           >
-            {props.collapseParms ? (
-              <CIcon icon={cilChevronBottom} className="me-2" />
-            ) : (
+            {!props.collapseParms && !props.disabled && props.paramsOn ? (
               <CIcon icon={cilChevronTop} className="me-2" />
+            ) : (
+              <CIcon icon={cilChevronBottom} className="me-2" />
             )}
           </span>
           &nbsp;&nbsp;&nbsp;
@@ -48,6 +48,7 @@ export const Header = (props) => {
               props.setOnoff(true)
             }}
             active={props.paramsOn}
+            disabled={props.disabled !== undefined ? props.disabled : false}
           >
             On
           </Button>
@@ -57,6 +58,7 @@ export const Header = (props) => {
               props.setOnoff(false)
             }}
             active={!props.paramsOn}
+            disabled={props.disabled !== undefined ? props.disabled : false}
           >
             Off
           </Button>

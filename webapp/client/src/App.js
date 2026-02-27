@@ -19,6 +19,7 @@ const App = () => {
 
   useEffect(() => {
     // setColorMode(storedTheme)
+    setColorMode('light')
     // Check for token to keep user logged in
     if (localStorage.jwtToken) {
       // Set auth token header auth
