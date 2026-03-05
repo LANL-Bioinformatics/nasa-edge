@@ -158,7 +158,7 @@ const runApp = async () => {
     // Connect to MongoDB
     const db = `mongodb://${config.DATABASE.SERVER_HOST}:${config.DATABASE.SERVER_PORT}/${config.DATABASE.NAME}`
     const dbOptions = {
-      authSource: "admin",
+      authSource: 'admin',
       user: config.DATABASE.USERNAME,
       pass: config.DATABASE.PASSWORD,
     }
