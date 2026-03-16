@@ -7,6 +7,7 @@ const {
   workflowList,
   generateNextflowWorkflowParams,
   generateWorkflowResult,
+  zipProjectOutputs,
 } = require('../workflow/util')
 const { write2log, execCmd, sleep, pidIsRunning } = require('./common')
 const logger = require('./logger')
@@ -209,6 +210,7 @@ const updateJobStatus = async (job, proj) => {
         proj.save()
         throw e
       }
+      await zipProjectOutputs(proj)
       status = 'complete'
     } else if (newStatus === 'Failed') {
       status = 'failed'

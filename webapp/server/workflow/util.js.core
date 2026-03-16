@@ -1,5 +1,6 @@
 const fs = require('fs')
 const xlsx = require('node-xlsx').default
+const { execCmd } = require('../utils/common')
 const config = require('../config')
 const workflowConfig = require('./config')
 
@@ -17,6 +18,13 @@ const workflowList = {
       ? `${process.env.NEXTFLOW_MAIN} -profile local`
       : `${config.NEXTFLOW.WORKFLOW_DIR}/sra2fastq/nextflow/main.nf -profile local`,
     config_tmpl: `${config.NEXTFLOW.WORKFLOW_DIR}/sra2fastq/workflow_config.tmpl`,
+  },
+  runFaQCs: {
+    outdir: 'output/ReadsQC',
+    nextflow_main: `${config.NEXTFLOW.WORKFLOW_DIR}/metagenomics/nextflow/main.nf`,
+    config_tmpl: `${config.NEXTFLOW.WORKFLOW_DIR}/metagenomics/templates/workflow_config.tmpl`,
+    zip_output: '<PROJECT>_readsQC.tar.gz',
+    zip_output_cmd: 'cd <PROJECT_HOME>/output && tar -czf <ZIP_OUTPUT> ReadsQC',
   },
 }
 
@@ -118,6 +126,26 @@ const validateBulkSubmissionInput = async (bulkExcel, type) => {
   return { validInput, errMsg, submissions }
 }
 
+// The output zip file is in the <project home>/output dir, and the zip file name is defined in workflowList[workflow].zip_output
+const zipProjectOutputs = async proj => {
+  const projHome = `${config.IO.PROJECT_BASE_DIR}/${proj.code}`
+  const projectConf = JSON.parse(fs.readFileSync(`${projHome}/conf.json`))
+  if (workflowList[projectConf.workflow.name].zip_output) {
+    const zipOutputPath = `${projHome}/output/${workflowList[
+      projectConf.workflow.name
+    ].zip_output.replaceAll('<PROJECT>', proj.name.replace(/\s+/g, '_'))}`
+    if (fs.existsSync(zipOutputPath)) {
+      return zipOutputPath
+    }
+    const cmd = workflowList[projectConf.workflow.name].zip_output_cmd
+      .replaceAll('<PROJECT_HOME>', projHome)
+      .replaceAll('<ZIP_OUTPUT>', zipOutputPath)
+    await execCmd(cmd)
+    return zipOutputPath
+  }
+  return null
+}
+
 module.exports = {
   cromwellWorkflows,
   nextflowWorkflows,
@@ -128,4 +156,5 @@ module.exports = {
   checkFlagFile,
   getWorkflowCommand,
   validateBulkSubmissionInput,
+  zipProjectOutputs,
 }
