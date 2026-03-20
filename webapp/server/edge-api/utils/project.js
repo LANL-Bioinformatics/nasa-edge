@@ -2,7 +2,10 @@ const fs = require('fs')
 const Project = require('../models/project')
 const Job = require('../models/job')
 const { getAllFiles } = require('../../utils/common')
-const { generateRunStats } = require('../../utils/cromwell')
+const { generateRunStats } = require('../../utils/local')
+const {
+  generateRunStats: generateCromwellRunStats,
+} = require('../../utils/cromwell')
 const {
   generateRunStats: generateNextflowRunStats,
 } = require('../../utils/nextflow')
@@ -140,8 +143,10 @@ const getProjectRunStats = async (code, type, req) => {
       const statsJson = `${projHome}/run_stats.json`
       if (job.queue === 'nextflow') {
         await generateNextflowRunStats(proj)
+      } else if (job.queue === 'cromwell') {
+        generateCromwellRunStats(proj)
       } else {
-        generateRunStats(proj)
+        await generateRunStats(proj)
       }
       stats = JSON.parse(fs.readFileSync(statsJson))
     }
