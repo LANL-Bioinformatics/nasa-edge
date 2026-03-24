@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const xlsx = require('node-xlsx').default
 const Papa = require('papaparse')
+const { execCmd } = require('../utils/common')
 const Upload = require('../edge-api/models/upload')
 const config = require('../config')
 const workflowConfig = require('./config')
@@ -460,6 +461,26 @@ const validateBulkSubmissionInput = async (bulkExcel, type) => {
   return { validInput, errMsg, submissions }
 }
 
+// The output zip file is in the <project home>/output dir, and the zip file name is defined in workflowList[workflow].zip_output
+const zipProjectOutputs = async proj => {
+  const projHome = `${config.IO.PROJECT_BASE_DIR}/${proj.code}`
+  const projectConf = JSON.parse(fs.readFileSync(`${projHome}/conf.json`))
+  if (workflowList[projectConf.workflow.name].zip_output) {
+    const zipOutputPath = `${projHome}/output/${workflowList[
+      projectConf.workflow.name
+    ].zip_output.replaceAll('<PROJECT>', proj.name.replace(/\s+/g, '_'))}`
+    if (fs.existsSync(zipOutputPath)) {
+      return zipOutputPath
+    }
+    const cmd = workflowList[projectConf.workflow.name].zip_output_cmd
+      .replaceAll('<PROJECT_HOME>', projHome)
+      .replaceAll('<ZIP_OUTPUT>', zipOutputPath)
+    await execCmd(cmd)
+    return zipOutputPath
+  }
+  return null
+}
+
 module.exports = {
   cromwellWorkflows,
   nextflowWorkflows,
@@ -470,4 +491,5 @@ module.exports = {
   checkFlagFile,
   getWorkflowCommand,
   validateBulkSubmissionInput,
+  zipProjectOutputs,
 }
