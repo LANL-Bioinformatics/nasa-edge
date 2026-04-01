@@ -3,6 +3,7 @@ const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
 const bodyParser = require('body-parser')
+const fs = require('fs')
 const fileUpload = require('express-fileupload')
 const mongoose = require('mongoose')
 const passport = require('passport')
@@ -87,6 +88,14 @@ app.use(
 app.use('/uploads', express.static(config.IO.UPLOADED_FILES_DIR))
 app.use('/publicdata', express.static(config.IO.PUBLIC_BASE_DIR))
 app.use('/workflow-docs', express.static(config.IO.WORKFLOW_DOCS_DIR))
+if (
+  config.IO.JBROWSE2_BASE_DIR &&
+  fs.existsSync(config.IO.JBROWSE2_BASE_DIR) &&
+  fs.statSync(config.IO.JBROWSE2_BASE_DIR).isDirectory()
+) {
+  app.use('/jbrowse2', express.static(config.IO.JBROWSE2_BASE_DIR))
+}
+
 
 // Serving React as static files in Express and redirect url path to React client app
 if (config.NODE_ENV === 'production') {

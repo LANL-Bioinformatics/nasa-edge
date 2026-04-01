@@ -263,6 +263,9 @@ const config = {
     UPLOADED_FILES_TEMP_DIR:
       process.env.UPLOADED_FILES_TEMP_DIR ||
       path.join(IO_BASE_DIR, 'upload/tmp'),
+    // Directory to store JBrowse2 data.
+    JBROWSE2_BASE_DIR:
+      process.env.JBROWSE2_BASE_DIR || path.join(IO_BASE_DIR, 'jbrowse2'),
     // Globus
     GLOBUG_DATA_HOME_DIR: process.env.GLOBUS_DATA_HOME_DIR,
     // Directory to store workflow docs
