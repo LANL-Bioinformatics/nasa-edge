@@ -266,6 +266,9 @@ const config = {
     // Directory to store JBrowse2 data.
     JBROWSE2_BASE_DIR:
       process.env.JBROWSE2_BASE_DIR || path.join(IO_BASE_DIR, 'jbrowse2'),
+    // Directory to store opaver web app data.
+    OPAVER_WEB_BASE_DIR:
+      process.env.OPAVER_WEB_BASE_DIR || path.join(IO_BASE_DIR, 'opaver_web'),
     // Globus
     GLOBUG_DATA_HOME_DIR: process.env.GLOBUS_DATA_HOME_DIR,
     // Directory to store workflow docs

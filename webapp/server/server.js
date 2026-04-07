@@ -95,6 +95,13 @@ if (
 ) {
   app.use('/jbrowse2', express.static(config.IO.JBROWSE2_BASE_DIR))
 }
+if (
+  config.IO.OPAVER_WEB_BASE_DIR &&
+  fs.existsSync(config.IO.OPAVER_WEB_BASE_DIR) &&
+  fs.statSync(config.IO.OPAVER_WEB_BASE_DIR).isDirectory()
+) {
+  app.use('/opaver_web', express.static(config.IO.OPAVER_WEB_BASE_DIR))
+}
 
 // Serving React as static files in Express and redirect url path to React client app
 if (config.NODE_ENV === 'production') {

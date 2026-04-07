@@ -70,6 +70,14 @@ export default defineConfig(({ mode }) => {
           target: API_URL,
           changeOrigin: true,
         },
+        '/jbrowse2': {
+          target: API_URL,
+          changeOrigin: true,
+        },
+        '/opaver_web': {
+          target: API_URL,
+          changeOrigin: true,
+        },
       },
     },
   }
