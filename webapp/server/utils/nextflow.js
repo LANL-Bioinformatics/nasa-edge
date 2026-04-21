@@ -272,7 +272,7 @@ const abortJobSlurm = async proj => {
   // If is local, find pid in .nextflow.pid and kill process and all descendant processes: pkill -TERM -P <pid>
 
   const pid = await getPid(proj)
-  if (pid && proj.status === 'running') {
+  if (pid) {
     const cmd = `${config.NEXTFLOW.SLURM_SSH} kill -9 ${pid}`
     // Don't need to wait for the deletion, the process may already complete
     execCmd(cmd)
