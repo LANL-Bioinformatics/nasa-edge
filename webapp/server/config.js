@@ -89,7 +89,7 @@ const config = {
     EXECUTOR: process.env.NEXTFLOW_EXECUTOR || 'local',
     SLURM_SSH: process.env.NEXTFLOW_SLURM_SSH || '',
     // Max allowed number of jobs in nextflow.
-    NUM_JOBS_MAX: makeIntIfDefined(process.env.NEXTFLOW_NUM_JOBS_MAX) || 100000,
+    NUM_JOBS_MAX: makeIntIfDefined(process.env.NEXTFLOW_NUM_JOBS_MAX) || 100,
     // Total size of the input files allowed per job.
     // Note: 161061273600 Bytes is 150 Gibibytes (161 Gigabytes).
     JOBS_INPUT_MAX_SIZE_BYTES:
