@@ -293,7 +293,10 @@ const abortJobSlurm = async proj => {
   for (i = 0; i < lines.length; i += 1) {
     const jobId = lines[i].trim()
     // don't need to wait for the command to complete
-    execCmd(`${config.NEXTFLOW.SLURM_SSH} scancel ${jobId}`)
+    logger.info(`Aborting slurm job ${jobId} for project ${proj.code}`)
+    if (jobId) {
+      execCmd(`${config.NEXTFLOW.SLURM_SSH} scancel ${jobId}`)
+    }
   }
   // delete edge job
   Job.deleteOne({ project: proj.code }, err => {
