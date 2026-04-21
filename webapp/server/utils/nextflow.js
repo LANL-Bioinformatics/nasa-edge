@@ -278,27 +278,8 @@ const abortJobSlurm = async proj => {
     execCmd(cmd)
   }
   // If is slurm, delete slurm job?
-  // get slurm jobId from .nextflow.log
-  const logFile = `${config.IO.PROJECT_BASE_DIR}/${proj.code}/nextflow/.nextflow.log`
-  const cmd = `grep 'Task submitter' ${logFile}|grep jobId|sed 's/.*jobId: //g'|sed 's/;.*//g'`
-  const ret = await execCmd(cmd)
+  // No. The slurm job will be automatically killed when the nextflow process is killed. We don't need to delete slurm job separately.
 
-  if (!ret || ret.code !== 0) {
-    // command failed
-  }
-  // delet slurm job by id
-  // scancel <jobid>
-  const lines = ret.message.split(/\n/)
-  let i = 0
-  for (i = 0; i < lines.length; i += 1) {
-    const jobId = lines[i].trim()
-    // don't need to wait for the command to complete
-    logger.info(`Aborting slurm job ${jobId} for project ${proj.code}`)
-    if (jobId) {
-      execCmd(`${config.NEXTFLOW.SLURM_SSH} scancel ${jobId}`)
-    }
-  }
-  // delete edge job
   Job.deleteOne({ project: proj.code }, err => {
     if (err) {
       logger.error(`Failed to delete job from DB ${proj.code}:${err}`)
