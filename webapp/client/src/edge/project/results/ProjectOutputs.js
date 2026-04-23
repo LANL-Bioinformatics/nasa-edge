@@ -123,17 +123,19 @@ const ProjectOutputs = (props) => {
       <Collapse isOpen={!collapseCard}>
         <CardBody>
           <LoaderDialog loading={loading === true} text="Zipping files..." />
-          <div className="edge-right">
-            <Button
-              color="primary"
-              size="sm"
-              className="rounded-pill"
-              onClick={() => setDownloadModalOpen(true)}
-              outline
-            >
-              &nbsp;Download Outputs&nbsp;
-            </Button>
-          </div>
+          {props.outputTreeData && (
+            <div className="edge-right">
+              <Button
+                color="primary"
+                size="sm"
+                className="rounded-pill"
+                onClick={() => setDownloadModalOpen(true)}
+                outline
+              >
+                &nbsp;Download Outputs&nbsp;
+              </Button>
+            </div>
+          )}
           <FileBrowser
             files={props.outputs}
             icons={{
