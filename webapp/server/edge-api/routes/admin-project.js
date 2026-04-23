@@ -250,7 +250,7 @@ router.post(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await downloadOutputs(req, res, 'user')
+    await downloadOutputs(req, res, 'admin')
   },
 )
 

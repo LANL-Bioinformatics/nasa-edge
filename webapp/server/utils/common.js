@@ -66,6 +66,20 @@ const timeFormat = d => {
   return `${hours}:${minutes}:${seconds}`
 }
 
+// format file size to match the display in file browser
+const formatFileSize = number => {
+  if (number >= 1024 && number < 1048576) {
+    return `${(number / 1024).toFixed(0)} KB`
+  }
+  if (number >= 1048576 && number < 1073741824) {
+    return `${(number / 1048576).toFixed(2)} MB`
+  }
+  if (number >= 1073741824) {
+    return `${(number / 1073741824).toFixed(2)} GB`
+  }
+  return `${number} B`
+}
+
 // Get file data for file browser
 // Return all files matched the extentions in a directory and sub directories
 const getAllFiles = (
@@ -178,7 +192,7 @@ const getTreeFiles = (dirPath, displayPath, apiPath, fileRelPath) => {
           filePath: newFileRelPath,
           size: stats.size,
           modified: Number(new Date(stats.mtime)),
-          label: `${file} (${(stats.size / 1024).toFixed(2)} KB)`,
+          label: `${file} (${formatFileSize(stats.size)})`,
           children: [],
           disabled: false,
           className: `file file-${className}`,
@@ -336,6 +350,7 @@ module.exports = {
   getAllFiles,
   getTreeFiles,
   findInputsize,
+  formatFileSize,
   execCmd,
   spawnCmd,
   sleep,
