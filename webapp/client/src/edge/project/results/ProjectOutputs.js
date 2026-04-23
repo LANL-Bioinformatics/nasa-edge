@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Card, CardBody, Collapse } from 'reactstrap'
+import { Card, CardBody, Collapse, Button } from 'reactstrap'
 import { FcFolder, FcOpenedFolder } from 'react-icons/fc'
 import FileBrowser from 'react-keyed-file-browser'
 import 'react-keyed-file-browser/dist/react-keyed-file-browser.css'
@@ -10,11 +10,13 @@ import FileSaver from 'file-saver'
 import { LoaderDialog } from '../../common/Dialogs'
 import { Header } from './CardHeader'
 import config from 'src/config'
+import { ProjectOutputDownload } from './ProjectOutputDownload'
 
 //list all files in a project directory
 const ProjectOutputs = (props) => {
   const [loading, setLoading] = useState(false)
   const [collapseCard, setCollapseCard] = useState(true)
+  const [downloadModalOpen, setDownloadModalOpen] = useState(false)
 
   const handleSelectedFile = (file) => {
     //open file in new tab
@@ -105,6 +107,13 @@ const ProjectOutputs = (props) => {
 
   return (
     <Card className="workflow-result-card">
+      <ProjectOutputDownload
+        type={props.type}
+        isOpen={downloadModalOpen}
+        project={props.project}
+        outputTreeData={props.outputTreeData}
+        closeModal={() => setDownloadModalOpen(false)}
+      />
       <Header
         toggle={true}
         toggleParms={toggleOutputs}
@@ -114,6 +123,17 @@ const ProjectOutputs = (props) => {
       <Collapse isOpen={!collapseCard}>
         <CardBody>
           <LoaderDialog loading={loading === true} text="Zipping files..." />
+          <div className="edge-right">
+            <Button
+              color="primary"
+              size="sm"
+              className="rounded-pill"
+              onClick={() => setDownloadModalOpen(true)}
+              outline
+            >
+              &nbsp;Download Outputs&nbsp;
+            </Button>
+          </div>
           <FileBrowser
             files={props.outputs}
             icons={{

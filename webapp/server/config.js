@@ -67,7 +67,7 @@ const config = {
     // Base URL at which visitors can access the web server (e.g. "https://edge.bioinformatics.org").
     // Note: Some emails the server sends to visitors will contain URLs based upon this one.
     UI_BASE_URL:
-      process.env.APP_UI_BASE_URL || 'https://edge-dev.edgebioinformatics.org/',
+      process.env.APP_UI_BASE_URL || 'https://edgev3.edgebioinformatics.org/',
     // Port number on which the web server will listen for HTTP requests.
     SERVER_PORT: makeIntIfDefined(process.env.APP_SERVER_PORT) || 5000,
     // Version identifier of the application.
@@ -259,6 +259,8 @@ const config = {
     // Directory to store user uploaded files
     UPLOADED_FILES_DIR:
       process.env.UPLOADED_FILES_DIR || path.join(IO_BASE_DIR, 'upload/files'),
+    // Directory to store temporary files, including zip files for download.
+    TMP_BASE_DIR: process.env.TMP_BASE_DIR || path.join(IO_BASE_DIR, 'tmp'),
     // Directory used by file uploading function.
     UPLOADED_FILES_TEMP_DIR:
       process.env.UPLOADED_FILES_TEMP_DIR ||

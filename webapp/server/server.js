@@ -88,6 +88,7 @@ app.use(
 app.use('/uploads', express.static(config.IO.UPLOADED_FILES_DIR))
 app.use('/publicdata', express.static(config.IO.PUBLIC_BASE_DIR))
 app.use('/workflow-docs', express.static(config.IO.WORKFLOW_DOCS_DIR))
+app.use('/tmp', express.static(config.IO.TMP_BASE_DIR))
 if (
   config.IO.JBROWSE2_BASE_DIR &&
   fs.existsSync(config.IO.JBROWSE2_BASE_DIR) &&

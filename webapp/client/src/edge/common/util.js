@@ -29,6 +29,7 @@ export const apis = {
   adminUploads: '/api/admin/uploads',
   adminBulkSubmissions: '/api/admin/bulkSubmissions',
   workflowDocs: '/workflow-docs',
+  tmp: '/tmp',
 }
 
 export const defaults = {

@@ -78,6 +78,10 @@ export default defineConfig(({ mode }) => {
           target: API_URL,
           changeOrigin: true,
         },
+        '/tmp': {
+          target: API_URL,
+          changeOrigin: true,
+        },
       },
     },
   }

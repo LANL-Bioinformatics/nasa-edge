@@ -353,6 +353,51 @@ button:hover {
   z-index: 9999;
 }
 // react-dropdown-tree-select
+.edge-dropdown-tree-select .dropdown-trigger {
+  //display: none !important;
+  width: 765px !important;
+  max-height: 65px !important;
+}
+// react-dropdown-tree-select
+.edge-dropdown-tree-select .dropdown-trigger .search {
+  width: 700px !important;
+}
+.edge-dropdown-tree-select .dropdown-trigger .arrow.top {
+  &::after {
+    content: ' ';
+  }
+}
+.edge-dropdown-tree-select .dropdown-content {
+  visibility: visible !important;
+  width: 765px !important;
+  max-height: 520px !important;
+  height: 500px !important;
+  border: none;
+  outline: none;
+}
+.edge-dropdown-tree-select .dropdown-content .file {
+  font-style: italic;
+}
+.edge-dropdown-tree-select .dropdown-content .toggle {
+  white-space: pre;
+  margin-right: 4px;
+  cursor: pointer;
+  color:#f9b115;
+  font-weight: bold;
+  font-size: 1.2em !important;
+
+  &::after {
+    content: ' ';
+  }
+
+  &.collapsed::after {
+    content: '+';
+  }
+
+  &.expanded::after {
+    content: '-';
+  }
+}
 .dropdown-content .infinite-scroll-component {
   overflow-y: inherit;
 }

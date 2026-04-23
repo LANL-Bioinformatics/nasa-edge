@@ -17,6 +17,10 @@ const {
   getResult,
   getRunStats,
 } = require('../controllers/admin-project-controller')
+const {
+  getOutputTreeData,
+  downloadOutputs,
+} = require('../controllers/common-project-controller')
 
 /**
  * @swagger
@@ -229,6 +233,24 @@ router.get(
   projectCodeValidate,
   async (req, res) => {
     await getOutputs(req, res)
+  },
+)
+
+router.get(
+  '/projects/:code/outputTreeData',
+  projectCodeValidationRules(),
+  projectCodeValidate,
+  async (req, res) => {
+    await getOutputTreeData(req, res, 'admin')
+  },
+)
+
+router.post(
+  '/projects/:code/downloadOutputs',
+  projectCodeValidationRules(),
+  projectCodeValidate,
+  async (req, res) => {
+    await downloadOutputs(req, res, 'user')
   },
 )
 

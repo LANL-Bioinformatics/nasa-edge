@@ -1,7 +1,8 @@
 const fs = require('fs')
+const randomize = require('randomatic')
 const Project = require('../models/project')
 const Job = require('../models/job')
-const { getAllFiles } = require('../../utils/common')
+const { getAllFiles, getTreeFiles, zipFiles } = require('../../utils/common')
 const { generateRunStats } = require('../../utils/local')
 const {
   generateRunStats: generateCromwellRunStats,
@@ -109,6 +110,25 @@ const getProjectOutputs = async (code, type, req) => {
     return Promise.reject(err)
   }
 }
+// Return output files in tree data structure for file browser
+const getProjectOutputTreeData = async (code, type, req) => {
+  try {
+    const projDir = config.IO.PROJECT_BASE_DIR
+    const proj = await getProject(code, type, req.user)
+    let files = []
+    if (proj && fs.existsSync(`${projDir}/${proj.code}/output`)) {
+      files = getTreeFiles(
+        `${projDir}/${proj.code}/output`,
+        '',
+        `/projects/${proj.code}/output`,
+        `${projDir}/${proj.code}/output`,
+      )
+    }
+    return files
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
 
 const getProjectResult = async (code, type, req) => {
   try {
@@ -155,6 +175,34 @@ const getProjectRunStats = async (code, type, req) => {
     return Promise.reject(err)
   }
 }
+// zip output files and return the zip file url
+const zipProjectOutputs = async (code, type, req) => {
+  try {
+    const proj = await getProject(code, type, req.user)
+    if (!proj) {
+      return null
+    }
+    // generate tmp code and create tmp dir for zip file
+    let tmp = randomize('Aa0', 8)
+    let outDir = `${config.IO.TMP_BASE_DIR}/${tmp}`
+    while (fs.existsSync(outDir)) {
+      tmp = randomize('Aa0', 8)
+      outDir = `${config.IO.TMP_BASE_DIR}/${tmp}`
+    }
+    fs.mkdirSync(outDir)
+
+    const zipName = `${proj.name.replaceAll(' ', '_')}_${proj.type.replaceAll(' ', '_')}_${new Date().toISOString().split('.')[0].replace(/:/g, '-')}.tgz`
+    await zipFiles(
+      `${outDir}/${zipName}`,
+      `${config.IO.PROJECT_BASE_DIR}/${proj.code}/output`,
+      req.body.filePaths,
+    )
+    // relative url to download the zip file
+    return `/${tmp}/${zipName}`
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
 
 module.exports = {
   getAllFiles,
@@ -162,6 +210,8 @@ module.exports = {
   updateProject,
   getProjectConf,
   getProjectOutputs,
+  getProjectOutputTreeData,
   getProjectResult,
   getProjectRunStats,
+  zipProjectOutputs,
 }
