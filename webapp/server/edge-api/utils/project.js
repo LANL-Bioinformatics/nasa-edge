@@ -179,7 +179,7 @@ const getProjectRunStats = async (code, type, req) => {
 const zipProjectOutputs = async (code, type, req) => {
   try {
     const proj = await getProject(code, type, req.user)
-    if (proj) {
+    if (!proj) {
       throw new Error('Project not found')
     }
     // generate tmp code and create tmp dir for zip file

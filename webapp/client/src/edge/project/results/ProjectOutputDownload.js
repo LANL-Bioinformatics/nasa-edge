@@ -75,14 +75,14 @@ export const ProjectOutputDownload = (props) => {
         //disable this, use popup to open the download link
         // setDownloadMsg(
         //   'Please click the link <a href="' +
-        //     `${apis.tmp}/${data.zipUrl}` +
+        //     `${apis.tmp}${data.zipUrl}` +
         //     '" target="_blank">here</a> to download the zip file. ',
         // )
         //setOpenSuccessDialog(true)
 
         //open the download link in new tab
         //have to change browser settings to allow popups, otherwise it will be blocked by browser security policy
-        window.open(`${apis.tmp}/${data.zipUrl}`, '_blank')
+        window.open(`${apis.tmp}${data.zipUrl}`, '_blank')
       })
       .catch((err) => {
         setSubmitting(false)
