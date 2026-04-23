@@ -89,7 +89,7 @@ const config = {
     EXECUTOR: process.env.NEXTFLOW_EXECUTOR || 'local',
     SLURM_SSH: process.env.NEXTFLOW_SLURM_SSH || '',
     // Max allowed number of jobs in nextflow.
-    NUM_JOBS_MAX: makeIntIfDefined(process.env.NEXTFLOW_NUM_JOBS_MAX) || 100,
+    NUM_JOBS_MAX: makeIntIfDefined(process.env.NEXTFLOW_NUM_JOBS_MAX) || 100000,
     // Total size of the input files allowed per job.
     // Note: 161061273600 Bytes is 150 Gibibytes (161 Gigabytes).
     JOBS_INPUT_MAX_SIZE_BYTES:
@@ -178,6 +178,9 @@ const config = {
       // delete old db backups every day at 2 am
       DATABASE_BACKUP_PRUNER:
         process.env.CRON_DATABASE_BACKUP_PRUNER_SCHEDULE || '0 2 * * *',
+      // delete old temp files every hour
+      TEMP_FILE_CLEANUP:
+        process.env.CRON_TEMP_FILE_CLEANUP_SCHEDULE || '0 * * * *',
     },
   },
   DATABASE: {

@@ -34,6 +34,7 @@ const {
   bulkSubmissionRerunMonitor,
 } = require('./crons/bulkSubmissionMonitor')
 const { dbBackup, dbBackupClean } = require('./crons/dbMonitors')
+const { cleanupTempFiles } = require('./crons/fileMonitors')
 const config = require('./config')
 
 const app = express()
@@ -88,6 +89,7 @@ app.use(
 app.use('/uploads', express.static(config.IO.UPLOADED_FILES_DIR))
 app.use('/publicdata', express.static(config.IO.PUBLIC_BASE_DIR))
 app.use('/workflow-docs', express.static(config.IO.WORKFLOW_DOCS_DIR))
+app.use('/uploads', express.static(config.IO.UPLOADED_FILES_DIR))
 app.use('/tmp', express.static(config.IO.TMP_BASE_DIR))
 if (
   config.IO.JBROWSE2_BASE_DIR &&
@@ -166,6 +168,10 @@ if (config.NODE_ENV === 'production') {
   // delete older DB backups every day at 12am
   cron.schedule(config.CRON.SCHEDULES.DATABASE_BACKUP_PRUNER, () => {
     dbBackupClean()
+  })
+  // delete older temp files every hour
+  cron.schedule(config.CRON.SCHEDULES.TEMP_FILE_CLEANUP, () => {
+    cleanupTempFiles()
   })
 }
 

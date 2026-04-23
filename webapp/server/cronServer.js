@@ -27,6 +27,7 @@ const {
   bulkSubmissionRerunMonitor,
 } = require('./crons/bulkSubmissionMonitor')
 const { dbBackup, dbBackupClean } = require('./crons/dbMonitors')
+const { cleanupTempFiles } = require('./crons/fileMonitors')
 const config = require('./config')
 
 const app = express()
@@ -92,6 +93,10 @@ cron.schedule(config.CRON.SCHEDULES.DATABASE_BACKUP_CREATOR, () => {
 // delete older DB backups every day at 12am
 cron.schedule(config.CRON.SCHEDULES.DATABASE_BACKUP_PRUNER, () => {
   dbBackupClean()
+})
+// delete older temp files every hour
+cron.schedule(config.CRON.SCHEDULES.TEMP_FILE_CLEANUP, () => {
+  cleanupTempFiles()
 })
 
 const runApp = async () => {
