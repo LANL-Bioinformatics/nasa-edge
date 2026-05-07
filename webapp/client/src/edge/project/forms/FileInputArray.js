@@ -23,15 +23,17 @@ export const FileInputArray = (props) => {
     name: 'singleFileInput',
   })
 
-  const handleFileSelection = (path, type, index, key) => {
+  const handleFileSelection = (path, type, index, key, source) => {
     if (props.isValidFileInput(key, path)) {
       form.fileInput[index] = path
       form.fileInput_display[index] = key
       form.fileInput_isValid[index] = true
+      form.fileInput_source[index] = source
     } else {
       form.fileInput[index] = null
       form.fileInput_display[index] = null
       form.fileInput_isValid[index] = false
+      form.fileInput_source[index] = null
     }
 
     setDoValidation(doValidation + 1)
@@ -61,6 +63,7 @@ export const FileInputArray = (props) => {
       fileInput: [],
       fileInput_display: [],
       fileInput_isValid: [],
+      fileInput_source: [],
     })
     setDoValidation(doValidation + 1)
   }, [props.reset]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -179,6 +182,7 @@ export const FileInputArray = (props) => {
                     form.fileInput.splice(index, 1)
                     form.fileInput_display.splice(index, 1)
                     form.fileInput_isValid.splice(index, 1)
+                    form.fileInput_source.splice(index, 1)
                     fileInputRemove(index)
                     setDoValidation(doValidation + 1)
                   }}

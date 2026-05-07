@@ -23,49 +23,67 @@ export const PairedFileInputArray = (props) => {
     name: 'pairedFileInput',
   })
 
-  const handleFileSelection = (path, type, index, key) => {
+  const ensureSource = (index) => {
+    if (!form.fileInput_source[index]) {
+      form.fileInput_source[index] = {}
+    }
+  }
+
+  const handleFileSelection = (path, type, index, key, source) => {
     if ((props.isOptional && !key) || props.isValidFileInput(key, path)) {
       if (type === 'pairedFileInput1') {
         if (form.fileInput[index]) {
+          ensureSource(index)
           form.fileInput[index].R1 = path
           form.fileInput_display[index].R1 = key
           form.fileInput_isValid[index].R1 = true
+          form.fileInput_source[index].R1 = source
         } else {
           form.fileInput[index] = { R1: path }
           form.fileInput_display[index] = { R1: key }
           form.fileInput_isValid[index] = { R1: true }
+          form.fileInput_source[index] = { R1: source }
         }
       } else if (type === 'pairedFileInput2') {
         if (form.fileInput[index]) {
+          ensureSource(index)
           form.fileInput[index].R2 = path
           form.fileInput_display[index].R2 = key
           form.fileInput_isValid[index].R2 = true
+          form.fileInput_source[index].R2 = source
         } else {
           form.fileInput[index] = { R2: path }
           form.fileInput_display[index] = { R2: key }
           form.fileInput_isValid[index] = { R2: true }
+          form.fileInput_source[index] = { R2: source }
         }
       }
     } else {
       if (type === 'pairedFileInput1') {
         if (form.fileInput[index]) {
+          ensureSource(index)
           form.fileInput[index].R1 = null
           form.fileInput_display[index].R1 = null
           form.fileInput_isValid[index].R1 = false
+          form.fileInput_source[index].R1 = null
         } else {
           form.fileInput[index] = { R1: null }
           form.fileInput_display[index] = { R1: null }
           form.fileInput_isValid[index] = { R1: false }
+          form.fileInput_source[index] = { R1: null }
         }
       } else if (type === 'pairedFileInput2') {
         if (form.fileInput[index]) {
+          ensureSource(index)
           form.fileInput[index].R2 = null
           form.fileInput_display[index].R2 = null
           form.fileInput_isValid[index].R2 = false
+          form.fileInput_source[index].R2 = null
         } else {
           form.fileInput[index] = { R2: null }
           form.fileInput_display[index] = { R2: null }
           form.fileInput_isValid[index] = { R2: false }
+          form.fileInput_source[index] = { R2: null }
         }
       }
     }
@@ -95,6 +113,7 @@ export const PairedFileInputArray = (props) => {
       fileInput: [],
       fileInput_display: [],
       fileInput_isValid: [],
+      fileInput_source: [],
     })
     setDoValidation(doValidation + 1)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -227,6 +246,7 @@ export const PairedFileInputArray = (props) => {
                     form.fileInput.splice(index, 1)
                     form.fileInput_display.splice(index, 1)
                     form.fileInput_isValid.splice(index, 1)
+                    form.fileInput_source.splice(index, 1)
                     pairedFileInputRemove(index)
                     setDoValidation(doValidation + 1)
                   }}

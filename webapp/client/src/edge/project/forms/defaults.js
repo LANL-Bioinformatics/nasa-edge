@@ -78,18 +78,21 @@ export const components = {
     validForm: false,
     fileInput: null,
     fileInput_display: null,
+    fileInput_source: null,
   },
   fileInputArray: {
     validForm: false,
     fileInput: [],
     fileInput_display: [],
     fileInput_isValid: [],
+    fileInput_source: [],
   },
   pairedFileInputArray: {
     validForm: false,
     fileInput: [],
     fileInput_display: [],
     fileInput_isValid: [],
+    fileInput_source: [],
   },
   optionSelector: {
     validForm: true,
@@ -124,6 +127,8 @@ export const components = {
       platform_display: 'Illumina',
       fileInput: [],
       fileInput_display: [],
+      fileInput_source: [],
+      fastqInspection: null,
     },
   },
   project: {

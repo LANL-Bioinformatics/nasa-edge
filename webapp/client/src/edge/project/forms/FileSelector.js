@@ -133,7 +133,7 @@ export const FileSelector = (props) => {
       setDisable_view_file(false)
     }
 
-    props.onChange(fileKey.filePath, props.fieldname, props.index, fileKey.key)
+    props.onChange(fileKey.filePath, props.fieldname, props.index, fileKey.key, fileKey)
   }
 
   const handleUserInputFile = (filename) => {
@@ -142,7 +142,12 @@ export const FileSelector = (props) => {
     if (props.viewFile === true) {
       setDisable_view_file(false)
     }
-    props.onChange(filename, props.fieldname, props.index, filename)
+    props.onChange(filename, props.fieldname, props.index, filename, {
+      key: filename,
+      path: filename,
+      url: filename,
+      filePath: filename,
+    })
   }
 
   const toggleFBModal = () => {
@@ -166,7 +171,7 @@ export const FileSelector = (props) => {
     setCleanup_input(props.cleanupInput)
     setFile_path('')
     setFile('')
-    props.onChange('', props.fieldname, props.index, '')
+    props.onChange('', props.fieldname, props.index, '', null)
   }
 
   return (

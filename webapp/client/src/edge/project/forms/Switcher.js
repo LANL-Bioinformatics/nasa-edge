@@ -19,7 +19,7 @@ export const Switcher = (props) => {
 
   useEffect(() => {
     setState({ ...components[componentName], isTrue: props.defaultValue })
-  }, [props.reset]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [props.defaultValue, props.reset]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (props.disableFalse) {
