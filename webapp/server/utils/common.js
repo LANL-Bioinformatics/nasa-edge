@@ -333,11 +333,22 @@ const linkCopyFile = async (file, dir, action, uploadOnly) => {
 }
 
 // The output zip file is in the io/tmp/<random> dir, and the zip file name is <project_name>_outputs.tgz
-const zipFiles = async (name, filePath, files) => {
-  const cmd = `tar -czf ${name} -C ${filePath} ${files.join(' ')}`
+const zipFiles = async (outdir, name, filePath, files) => {
+  // link outputdir/name to filePath
+  const linkedName = `${outdir}/${name}`
+  if (fs.existsSync(linkedName)) {
+    fs.unlinkSync(linkedName)
+  }
+  fs.symlinkSync(filePath, linkedName, 'dir')
+  // add new top-level directory in zip file to avoid issue when unzipping files from output folder, for example, if the file path is 'Taxonomy/file1.txt', the file path in zip file will be 'project_name_outputs/Taxonomy/file1.txt'
+  const tempFiles = files.map(file => `${name}/${file}`)
+  // const zipFile = `${name}.tgz`
+  // const cmd = `tar -czf ${outdir}/${zipFile} -C ${outdir} ${tempFiles.join(' ')}`
+  const zipFile = `${name}.zip`
+  const cmd = `cd ${outdir} && zip -r ${outdir}/${zipFile} ${tempFiles.join(' ')}`
   await execCmd(cmd)
-  if (fs.existsSync(name)) {
-    return name
+  if (fs.existsSync(`${outdir}/${zipFile}`)) {
+    return zipFile
   }
   return null
 }
