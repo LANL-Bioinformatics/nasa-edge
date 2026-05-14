@@ -35,18 +35,13 @@ export const FastqInput = (props) => {
   }
   const setPlatform = (inForm, name) => {
     inspectionRun.current += 1
-    let paired = form.paired
     if (inForm.option.toLowerCase() !== 'illumina') {
-      paired = false
+      form.paired = false
     } else if (props.isPaired != null) {
-      paired = props.isPaired
+      form.paired = props.isPaired
     }
-    setState({
-      ...form,
-      paired,
-      platform: inForm.option,
-      platform_display: inForm.display ? inForm.display : inForm.option,
-    })
+    form['platform'] = inForm.option
+    form['platform_display'] = inForm.display ? inForm.display : inForm.option
     setDoValidation((value) => value + 1)
   }
   const getPlatformOption = (platform) => {
