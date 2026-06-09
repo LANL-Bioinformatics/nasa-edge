@@ -31,6 +31,7 @@ const {
   getResetPasswordLink,
   login,
   oauthLogin,
+  getAnnouncement,
 } = require('../controllers/user-controller')
 
 /**
@@ -325,5 +326,10 @@ router.post(
     await oauthLogin(req, res)
   },
 )
+
+// get system announcement
+router.get('/announcement', async (req, res) => {
+  await getAnnouncement(req, res)
+})
 
 module.exports = router

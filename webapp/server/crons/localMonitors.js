@@ -36,6 +36,9 @@ const localWorkflowMonitor = async () => {
       return
     }
     logger.info(`Processing local request: ${proj.code}`)
+    // set project status to 'processing'
+    proj.status = 'processing'
+    await proj.save()
     // process request
     const projHome = `${config.IO.PROJECT_BASE_DIR}/${proj.code}`
     const projectConf = JSON.parse(fs.readFileSync(`${projHome}/conf.json`))

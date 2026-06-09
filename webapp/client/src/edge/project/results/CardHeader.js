@@ -3,6 +3,7 @@ import { Button, ButtonGroup, CardHeader, Badge } from 'reactstrap'
 import CIcon from '@coreui/icons-react'
 import { cilChevronTop, cilChevronBottom } from '@coreui/icons'
 import { colors } from 'src/util'
+import { AISummaryButton } from './AISummaryButton'
 
 export const Header = (props) => {
   const [headerColor, setHeaderColor] = useState(colors.light)
@@ -42,26 +43,38 @@ export const Header = (props) => {
           ''
         )}
       </span>
-      {props.onoff && (
-        <ButtonGroup style={{ float: 'right' }} className="mr-3" aria-label="First group" size="sm">
-          <Button
-            color="outline-primary"
-            onClick={() => props.setOnoff(true)}
-            active={props.paramsOn}
-          >
-            On
-          </Button>
-          <Button
-            color="outline-primary"
-            onClick={() => {
-              props.setOnoff(false)
-              props.setCollapseParms(true)
-            }}
-            active={!props.paramsOn}
-          >
-            Off
-          </Button>
-        </ButtonGroup>
+      {(props.aiSummary || props.onoff) && (
+        <div className="edge-card-header-actions" onClick={(event) => event.stopPropagation()}>
+          {props.aiSummary && (
+            <AISummaryButton
+              sectionKey={props.aiSummary.sectionKey}
+              title={props.aiSummary.title || props.title}
+              project={props.aiSummary.project}
+              userType={props.aiSummary.userType}
+            />
+          )}
+          {props.onoff && (
+            <ButtonGroup className="mr-3" aria-label="First group" size="sm">
+              <Button
+                color="outline-primary"
+                onClick={() => props.setOnoff(true)}
+                active={props.paramsOn}
+              >
+                On
+              </Button>
+              <Button
+                color="outline-primary"
+                onClick={() => {
+                  props.setOnoff(false)
+                  props.setCollapseParms(true)
+                }}
+                active={!props.paramsOn}
+              >
+                Off
+              </Button>
+            </ButtonGroup>
+          )}
+        </div>
       )}
     </CardHeader>
   )

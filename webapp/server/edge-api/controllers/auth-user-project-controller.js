@@ -15,6 +15,7 @@ const { getAllFiles } = require('../../utils/common')
 const { workflowList } = require('../../workflow/util')
 const logger = require('../../utils/logger')
 const config = require('../../config')
+const { localWorkflowMonitor } = require('../../crons/localMonitors')
 
 const sysError = config.APP.API_ERROR
 
@@ -91,6 +92,9 @@ const addOne = async (req, res) => {
       code,
     })
     const project = await newProject.save()
+    // launch local workflow monitor after new project created
+    await localWorkflowMonitor()
+
     return res.send({
       project,
       message: 'Action successful',

@@ -70,6 +70,10 @@ export default defineConfig(({ mode }) => {
           target: API_URL,
           changeOrigin: true,
         },
+        '/publicdata': {
+          target: API_URL,
+          changeOrigin: true,
+        },
         '/jbrowse2': {
           target: API_URL,
           changeOrigin: true,

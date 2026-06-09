@@ -81,7 +81,7 @@ const loginAsync = createAsyncThunk('user/login', async (userData, { dispatch })
     dispatch(setSubmittingForm(false))
   } catch (err) {
     if (typeof err === 'string') {
-      dispatch(addError({ login: err }))
+      dispatch(addError({ login: err ? err : 'API server error' }))
     } else {
       if (err.error) {
         dispatch(addError(err.error))

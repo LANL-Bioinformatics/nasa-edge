@@ -20,6 +20,7 @@ const {
 const {
   getOutputTreeData,
   downloadOutputs,
+  getAISummary,
 } = require('../controllers/common-project-controller')
 
 /**
@@ -339,6 +340,15 @@ router.get(
   projectCodeValidate,
   async (req, res) => {
     await getResult(req, res)
+  },
+)
+
+router.post(
+  '/projects/:code/aiSummary',
+  projectCodeValidationRules(),
+  projectCodeValidate,
+  async (req, res) => {
+    await getAISummary(req, res, 'admin')
   },
 )
 

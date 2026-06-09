@@ -7,6 +7,7 @@ const {
   getProjectRunStats,
   zipProjectOutputs,
 } = require('../utils/project')
+const { generateProjectAISummary } = require('../utils/ai-summary')
 const logger = require('../../utils/logger')
 const config = require('../../config')
 
@@ -81,6 +82,45 @@ const getResult = async (req, res, type) => {
     )
     return res.status(500).json({
       message: sysError,
+      success: false,
+    })
+  }
+}
+
+// Generate project result summary with the configured AI provider.
+const getAISummary = async (req, res, type) => {
+  try {
+    logger.debug(`/api/${type}/projects/${req.params.code}/aiSummary`)
+    const aiSummary = await generateProjectAISummary({
+      code: req.params.code,
+      type,
+      req,
+    })
+
+    return res.json({
+      summary: aiSummary.summary,
+      cached: aiSummary.cached,
+      model: aiSummary.model,
+      updated: aiSummary.updated,
+      message: 'Action successful',
+      success: true,
+    })
+  } catch (err) {
+    logger.error(
+      `/api/${type}/projects/${req.params.code}/aiSummary failed: ${err}`,
+    )
+
+    const providerRequestFailed = err.isAxiosError
+    const status = err.status || (providerRequestFailed ? 502 : 500)
+    let message = sysError
+    if (err.status) {
+      message = err.message
+    } else if (providerRequestFailed) {
+      message = 'AI summary provider request failed'
+    }
+
+    return res.status(status).json({
+      message,
       success: false,
     })
   }
@@ -180,6 +220,7 @@ module.exports = {
   getOutputs,
   getOutputTreeData,
   getResult,
+  getAISummary,
   getRunStats,
   downloadOutputs,
 }

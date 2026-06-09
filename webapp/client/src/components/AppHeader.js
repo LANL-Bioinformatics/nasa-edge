@@ -64,7 +64,7 @@ const AppHeader = () => {
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
 
-        {user.isAuthenticated ? (
+        {user.isAuthenticated || config.APP.SINGLE_USER_MODE_IS_ENABLED ? (
           <>
             <CHeaderNav className="d-none d-md-flex me-auto">
               <CNavItem>
@@ -99,59 +99,67 @@ const AppHeader = () => {
                 </CNavLink>
               </CNavItem>
             </CHeaderNav>
-            <CHeaderNav className="ms-3">
-              <AppHeaderDropdown user={user} logout={(e) => signOut(e)} />
-            </CHeaderNav>
-            {config.ORCID.IS_ENABLED && (
-              <CHeaderNav className="edge-header-orcid" style={{ paddingRight: '0px' }}>
-                <a href={'https://orcid.org/' + orcidid} target="_blank" rel="noreferrer">
-                  <img
-                    alt="OrcId logo"
-                    style={{ paddingLeft: '12px' }}
-                    src="https://orcid.org/assets/vectors/orcid.logo.icon.svg"
-                    className="edge-header-orcid-img mr-2"
-                  />
-                </a>
-              </CHeaderNav>
+            {!config.APP.SINGLE_USER_MODE_IS_ENABLED && (
+              <>
+                <CHeaderNav className="ms-3">
+                  <AppHeaderDropdown user={user} logout={(e) => signOut(e)} />
+                </CHeaderNav>
+                {config.ORCID.IS_ENABLED && (
+                  <CHeaderNav className="edge-header-orcid" style={{ paddingRight: '0px' }}>
+                    <a href={'https://orcid.org/' + orcidid} target="_blank" rel="noreferrer">
+                      <img
+                        alt="OrcId logo"
+                        style={{ paddingLeft: '12px' }}
+                        src="https://orcid.org/assets/vectors/orcid.logo.icon.svg"
+                        className="edge-header-orcid-img mr-2"
+                      />
+                    </a>
+                  </CHeaderNav>
+                )}
+                <CHeaderNav className="edge-header-orcid" onClick={signOut}>
+                  <MdLogout size={24} className="edge-header-orcid-icon" />
+                </CHeaderNav>
+              </>
             )}
-            <CHeaderNav className="edge-header-orcid" onClick={signOut}>
-              <MdLogout size={24} className="edge-header-orcid-icon" />
-            </CHeaderNav>
           </>
         ) : (
           <>
-            {config.APP.USER_AUTH_IS_ENABLED && (
-              <CHeaderNav className="ms-auto">
-                <CNavLink to="/login" as={NavLink}>
-                  Login
-                </CNavLink>
-                <CNavLink to="/register" as={NavLink}>
-                  Sign up
-                </CNavLink>
-              </CHeaderNav>
-            )}
-            {config.ORCID.IS_ENABLED && (
-              <CHeaderNav
-                className={
-                  config.APP.USER_AUTH_IS_ENABLED
-                    ? 'edge-header-orcid-login'
-                    : 'ms-auto edge-headerg-orcid-login'
-                }
-              >
-                <span className="edge-header-orcid">
-                  <a href="/oauth">
-                    <img
-                      alt="OrcId login"
-                      src="https://orcid.org/assets/vectors/orcid.logo.icon.svg"
-                      className="edge-header-orcid-img mr-2"
-                    />
-                    &nbsp;&nbsp;OrcID Login
-                  </a>
-                </span>
-                <div className="edge-header-orcid-login-help">
-                  <OrcidLoginHelp />
-                </div>
-              </CHeaderNav>
+            {!config.APP.SINGLE_USER_MODE_IS_ENABLED && (
+              <>
+                {config.APP.USER_AUTH_IS_ENABLED && (
+                  <CHeaderNav className="ms-auto">
+                    <CNavLink to="/login" as={NavLink}>
+                      Login
+                    </CNavLink>
+                    <CNavLink to="/register" as={NavLink}>
+                      Sign up
+                    </CNavLink>
+                  </CHeaderNav>
+                )}
+                {config.ORCID.IS_ENABLED && (
+                  <CHeaderNav
+                    className={
+                      config.APP.USER_AUTH_IS_ENABLED
+                        ? 'edge-header-orcid-login'
+                        : 'ms-auto edge-headerg-orcid-login'
+                    }
+                  >
+                    <span className="edge-header-orcid">
+                      <a href="/oauth">
+                        <img
+                          alt="OrcId login"
+                          src="https://orcid.org/assets/vectors/orcid.logo.icon.svg"
+                          className="edge-header-orcid-img mr-2"
+                        />
+                        &nbsp;&nbsp;OrcID Login
+                      </a>
+                    </span>
+                    <div className="edge-header-orcid-login-help">
+                      <OrcidLoginHelp />
+                    </div>
+                  </CHeaderNav>
+                )}
+              </>
             )}
           </>
         )}

@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Card, CardBody, Collapse } from 'reactstrap'
 import { isValidFileInput } from '../../common/util'
 import { HtmlText } from '../../common/HtmlText'
+import { getSraMetadata } from '../../common/sraMetadata'
 import { Header } from './SectionHeader'
 import { FastqInput } from './FastqInput'
 import { SRAAccessionInput } from './SRAAccessionInput'
 import { FileInputArray } from './FileInputArray'
 import { OptionSelector } from './OptionSelector'
+import { Switcher } from './Switcher'
 import { components } from './defaults'
 
 export const InputRawReads = (props) => {
@@ -16,16 +18,183 @@ export const InputRawReads = (props) => {
   const [collapseParms, setCollapseParms] = useState(false)
   const [doValidation, setDoValidation] = useState(0)
   const [reset, setReset] = useState(0)
+  const [sraMetadataStatus, setSraMetadataStatus] = useState({
+    loading: false,
+    message: null,
+    warning: null,
+  })
+  const sraMetadataRequest = useRef({
+    requestId: 0,
+    controller: null,
+    accessionKey: '',
+  })
 
   const toggleParms = () => {
     setCollapseParms(!collapseParms)
   }
 
+  const getSeqPlatformOption = (platform) => {
+    const options = props.seqPlatformOptions
+      ? props.seqPlatformOptions
+      : components[componentName].inputs['seqPlatform'].options
+    const match = options.find(
+      (item) =>
+        item.value.toLowerCase() === platform.toLowerCase() ||
+        item.text.toLowerCase() === platform.toLowerCase(),
+    )
+
+    return {
+      value: match ? match.value : platform,
+      display: match ? match.text : platform,
+    }
+  }
+
+  const getLayoutDisplay = (metadata) => {
+    if (metadata.libraryLayout === 'PAIRED') {
+      return 'paired-end'
+    }
+    if (metadata.libraryLayout === 'SINGLE') {
+      return 'single-end'
+    }
+    if (metadata.mixedLayout) {
+      return `mixed layout (${metadata.libraryLayoutValues.join(', ')})`
+    }
+    return 'unknown layout'
+  }
+
+  const getPlatformDisplay = (metadata) => {
+    if (metadata.platform) {
+      return metadata.platform
+    }
+    if (metadata.mixedPlatform) {
+      return `mixed platform (${metadata.platformValues.join(', ')})`
+    }
+    return 'unknown platform'
+  }
+
+  const clearSraMetadata = () => {
+    if (sraMetadataRequest.current.controller) {
+      sraMetadataRequest.current.controller.abort()
+    }
+    sraMetadataRequest.current = {
+      requestId: sraMetadataRequest.current.requestId + 1,
+      controller: null,
+      accessionKey: '',
+    }
+    form.sraMetadata = null
+    setSraMetadataStatus({
+      loading: false,
+      message: null,
+      warning: null,
+    })
+  }
+
+  const applySraMetadata = (metadata) => {
+    if (metadata.platform) {
+      const platformOption = getSeqPlatformOption(metadata.platform)
+      form.inputs['seqPlatform'].value = platformOption.value
+      form.inputs['seqPlatform'].display = platformOption.display
+
+      if (platformOption.value !== 'Illumina') {
+        form.inputs['paired'].value = false
+      }
+    }
+
+    if (metadata.paired !== null) {
+      form.inputs['paired'].value = metadata.paired
+    }
+
+    form.sraMetadata = metadata
+    setDoValidation((value) => value + 1)
+  }
+
+  const lookupSraMetadata = (accessions) => {
+    const cleanAccessions = accessions.map((accession) => accession.trim()).filter(Boolean)
+    const accessionKey = cleanAccessions.join(',')
+
+    if (!accessionKey) {
+      clearSraMetadata()
+      return
+    }
+
+    if (sraMetadataRequest.current.accessionKey === accessionKey) {
+      return
+    }
+
+    if (sraMetadataRequest.current.controller) {
+      sraMetadataRequest.current.controller.abort()
+    }
+
+    const controller = new AbortController()
+    const requestId = sraMetadataRequest.current.requestId + 1
+    sraMetadataRequest.current = {
+      requestId,
+      controller,
+      accessionKey,
+    }
+    form.sraMetadata = null
+    setSraMetadataStatus({
+      loading: true,
+      message: 'Checking SRA metadata...',
+      warning: null,
+    })
+
+    getSraMetadata(cleanAccessions, { signal: controller.signal })
+      .then((metadata) => {
+        if (
+          sraMetadataRequest.current.requestId !== requestId ||
+          form.inputs['source'].value !== 'sra'
+        ) {
+          return
+        }
+
+        applySraMetadata(metadata)
+        setSraMetadataStatus({
+          loading: false,
+          message: `Detected ${getPlatformDisplay(metadata)}, ${getLayoutDisplay(metadata)}.`,
+          warning:
+            metadata.mixedPlatform || metadata.mixedLayout
+              ? 'Multiple SRA runs reported different metadata; please review the selections.'
+              : null,
+        })
+      })
+      .catch((error) => {
+        if (error.name === 'AbortError' || sraMetadataRequest.current.requestId !== requestId) {
+          return
+        }
+
+        form.sraMetadata = null
+        setSraMetadataStatus({
+          loading: false,
+          message: null,
+          warning: `Unable to check SRA metadata: ${error.message}`,
+        })
+        setDoValidation((value) => value + 1)
+      })
+  }
+
   const setOption = (inForm, name) => {
     form.inputs[name].value = inForm.option
     form.inputs[name].display = inForm.display ? inForm.display : inForm.option
+    if (name === 'source') {
+      clearSraMetadata()
+    }
     setReset(reset + 1)
     setDoValidation(doValidation + 1)
+  }
+
+  const setSeqPlatformOption = (inForm, name) => {
+    form.inputs[name].value = inForm.option
+    form.inputs[name].display = inForm.display ? inForm.display : inForm.option
+    if (inForm.option !== 'Illumina') {
+      form.inputs['paired'].value = false
+    }
+    setDoValidation((value) => value + 1)
+  }
+
+  const setPairedOption = (inForm, name) => {
+    form.inputs[name].value = inForm.isTrue
+    setDoValidation((value) => value + 1)
   }
 
   const setFastqInput = (inForm, name) => {
@@ -58,6 +227,11 @@ export const InputRawReads = (props) => {
     form.inputs[name].display = inForm.accessions_display
     if (validInputs[name]) {
       validInputs[name].isValid = inForm.validForm
+    }
+    if (inForm.validForm) {
+      lookupSraMetadata(inForm.accessions)
+    } else {
+      clearSraMetadata()
     }
     setDoValidation(doValidation + 1)
   }
@@ -328,8 +502,66 @@ export const InputRawReads = (props) => {
                 setParams={setSRAccessionInput}
                 reset={reset}
               />
+              {(sraMetadataStatus.message || sraMetadataStatus.warning) && (
+                <>
+                  {sraMetadataStatus.message && (
+                    <>
+                      <span className="text-muted edge-text-size-small">
+                        {sraMetadataStatus.message}
+                      </span>
+                      <br></br>
+                    </>
+                  )}
+                  {sraMetadataStatus.warning && (
+                    <>
+                      <span className="text-warning edge-text-size-small">
+                        {sraMetadataStatus.warning}
+                      </span>
+                      <br></br>
+                    </>
+                  )}
+                </>
+              )}
               <HtmlText text={components[componentName].sraInput.note} />
               <br></br>
+              <br></br>
+              <OptionSelector
+                id={'seqPlatform'}
+                name={'seqPlatform'}
+                setParams={setSeqPlatformOption}
+                options={
+                  props.seqPlatformOptions
+                    ? props.seqPlatformOptions
+                    : components[componentName].inputs['seqPlatform'].options
+                }
+                text={
+                  props.seqPlatformText
+                    ? props.seqPlatformText
+                    : components[componentName].inputs['seqPlatform'].text
+                }
+                tooltip={
+                  props.seqPlatformTooltip
+                    ? props.seqPlatformTooltip
+                    : components[componentName].inputs['seqPlatform'].tooltip
+                }
+                defaultValue={form.inputs['seqPlatform'].value}
+                display={form.inputs['seqPlatform'].display}
+              />
+              <br></br>
+              {form.inputs['seqPlatform'].value === 'Illumina' && (
+                <>
+                  <Switcher
+                    id={'paired'}
+                    name={'paired'}
+                    setParams={setPairedOption}
+                    text={components[componentName].inputs['paired'].text}
+                    defaultValue={form.inputs['paired'].value}
+                    trueText={components.fastqInput.params['paired'].trueText}
+                    falseText={components.fastqInput.params['paired'].falseText}
+                  />
+                  <br></br>
+                </>
+              )}
             </>
           )}
         </CardBody>

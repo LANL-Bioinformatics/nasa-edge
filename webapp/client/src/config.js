@@ -93,8 +93,16 @@ const config = {
     NAME: import.meta.env.VITE_NAME || 'EDGE',
     // Note about the distribution of this application. Can be shown in the login page.
     DISTRIBUTION_NOTE: import.meta.env.VITE_DISTRIBUTION_NOTE,
-    // user/password authentication
-    USER_AUTH_IS_ENABLED: makeBoolean(import.meta.env.VITE_USER_AUTH_ENABLED, 'USER'),
+     // user/password authentication
+    USER_AUTH_IS_ENABLED: makeBoolean(import.meta.env.VITE_USER_AUTH_ENABLED),
+    // Boolean flag indicating whether the client is configured for single-user deployments, and should be disabled in multi-user deployments.
+    // Note: When this flag is `true`, the client will automatically register a single user with the email "singleuser@my.edge"
+    // and will redirect user to the location specified in `location.state.from` (or to "/home" if that is not specified)
+    // and the VITE_USER_AUTH_ENABLED and VITE_ORCID_AUTH_ENABLED flags will be ignored. This is useful for single-user deployments, where you want to disable user registration and authentication features, and automatically log in a single user.
+    SINGLE_USER_MODE_IS_ENABLED: makeBoolean(import.meta.env.VITE_SINGLE_USER_MODE_ENABLED),
+    // single-user mode credentials. User can login with these credentials when the single-user mode is disabled.
+    SINGLE_USER_EMAIL: import.meta.env.VITE_SINGLE_USER_EMAIL || 'singleuser@my.edge',
+    SINGLE_USER_PASSWORD: import.meta.env.VITE_SINGLE_USER_PASSWORD || 'pw4SU@edge',
     // Boolean flag indicating whether the client will request that the server send emails to the user.
     EMAIL_IS_ENABLED: makeBoolean(import.meta.env.VITE_EMAIL_NOTIFICATION_ENABLED),
     // Boolean flag indicating whether the client has bulk submission features enabled.
@@ -124,6 +132,9 @@ const config = {
     // ORCiD Auth URI, which contains the ORCiD Client ID.
     // Note: You can get the ORCiD Client ID value from: https://orcid.org/developer-tools
     AUTH_URI: makeOrcidAuthUri(makeLocalUri('/oauth'), import.meta.env.VITE_ORCID_CLIENT_ID),
+  },
+  AI_SUMMARY: {
+    IS_ENABLED: makeBoolean(import.meta.env.VITE_AI_SUMMARY_ENABLED),
   },
   UM: {
     REGISTER_MSG: 'Congratulations! Your account has been created successfully.',

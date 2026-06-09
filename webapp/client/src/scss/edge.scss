@@ -87,6 +87,10 @@ button:hover {
 }
 
 // EDGE
+.edge-app-banner {
+  font-size: 16px;
+}
+
 .edge-header {
   background-color: black;
   border-top: solid;
@@ -226,8 +230,42 @@ button:hover {
   cursor: pointer;
 }
 
+.edge-card-header-actions {
+  float: right;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .edge-card-header-title {
   font-weight: bold;
+}
+
+.edge-ai-summary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.edge-ai-summary-button-label {
+  font-size: 0.85em;
+}
+
+.edge-ai-summary-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edge-ai-summary-meta {
+  font-size: 0.85em;
+  margin-bottom: 0.5rem;
+}
+
+.edge-ai-summary-text {
+  white-space: pre-line;
+  line-height: 1.5;
+  margin-bottom: 0;
 }
 
 .edge-react-switch {

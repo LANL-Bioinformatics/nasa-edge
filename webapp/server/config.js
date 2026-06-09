@@ -47,6 +47,34 @@ const makeBoolean = val =>
 const makeIntIfDefined = val =>
   typeof val === 'string' ? parseInt(val, 10) : undefined
 
+/**
+ * Returns the value resolved to a float; or `undefined` if the original value is `undefined`.
+ *
+ * @param val {string|undefined} The value you want to resolve to a float
+ * @return {number|undefined} The float, or `undefined`
+ */
+const makeFloatIfDefined = val =>
+  typeof val === 'string' ? parseFloat(val) : undefined
+
+const DEFAULT_AI_SUMMARY_SYSTEM_CONTENT = `you are an genomic experts who writes concise briefings from metagenomic data.
+
+## Task
+
+Produce one concise paragraph summarizing the workflow result.
+
+## Data rules
+* If data are insufficient, say so plainly (e.g., "there is no result"), and avoid guessing.
+
+## What to include (in priority order)
+
+
+## Style & formatting
+
+* Plain language, neutral tone, no speculation.
+* One paragraph only; no bullets, no headings, no citations.
+* Convert large numbers to human-readable abbreviations with a leading tilde and one decimal when useful: 1,230 -> ~1.2K; 45,600 -> ~45.6K; 3,453,358 -> ~3.4M.
+* Prefer percent changes when available; if not, use relative terms ("higher than last month") with counts/levels.`
+
 // Determine several reusable directory paths based upon environment variables
 // and/or the path to the directory containing this `config.js` file.
 const appServerDir = process.env.APP_SERVER_DIR
@@ -74,6 +102,7 @@ const config = {
     VERSION: process.env.EDGE_WEB_APP_VERSION || 'v3.0.0-default',
     API_ERROR: process.env.API_ERROR || 'system error',
     SYSTEM_MESSAGE: process.env.SYSTEM_MESSAGE || null,
+    ANNOUNCEMENT: process.env.ANNOUNCEMENT || null,
   },
   AUTH: {
     // A secret string with which the web server will sign JWTs (JSON Web Tokens).
@@ -228,6 +257,40 @@ const config = {
     ),
     PROJECT_STATUS_SUBJECT:
       process.env.PROJECT_STATUS_SUBJECT || 'Your EDGE project status',
+  },
+  AI_SUMMARY: {
+    IS_ENABLED: makeBoolean(process.env.AI_SUMMARY_ENABLED),
+    API_KEY: process.env.AI_SUMMARY_API_KEY,
+    MODEL: process.env.AI_SUMMARY_MODEL,
+    BASE_URL: process.env.AI_SUMMARY_BASE_URL || 'https://api.openai.com/v1',
+    CHAT_COMPLETIONS_PATH:
+      process.env.AI_SUMMARY_CHAT_COMPLETIONS_PATH || '/chat/completions',
+    TEMPERATURE: makeFloatIfDefined(process.env.AI_SUMMARY_TEMPERATURE) ?? 0.2,
+    MAX_OUTPUT_TOKENS:
+      makeIntIfDefined(process.env.AI_SUMMARY_MAX_OUTPUT_TOKENS) || 300,
+    MAX_USER_CHARS:
+      makeIntIfDefined(process.env.AI_SUMMARY_MAX_USER_CHARS) || 60000,
+    MAX_FETCH_CHARS:
+      makeIntIfDefined(process.env.AI_SUMMARY_MAX_FETCH_CHARS) || 20000,
+    MAX_IMAGE_BYTES:
+      makeIntIfDefined(process.env.AI_SUMMARY_MAX_IMAGE_BYTES) || 1500000,
+    REQUEST_TIMEOUT_MS:
+      makeIntIfDefined(process.env.AI_SUMMARY_REQUEST_TIMEOUT_MS) || 120000,
+    INCLUDE_IMAGES: makeBoolean(process.env.AI_SUMMARY_INCLUDE_IMAGES ?? 'true'),
+    SYSTEM_CONTENT_DEFAULT:
+      process.env.AI_SUMMARY_SYSTEM_CONTENT ||
+      DEFAULT_AI_SUMMARY_SYSTEM_CONTENT,
+    SECTION_SYSTEM_CONTENT: {
+      runFaQCs: process.env.AI_SUMMARY_SYSTEM_CONTENT_READSQC,
+      assembly: process.env.AI_SUMMARY_SYSTEM_CONTENT_ASSEMBLY,
+      annotation: process.env.AI_SUMMARY_SYSTEM_CONTENT_ANNOTATION,
+      binning: process.env.AI_SUMMARY_SYSTEM_CONTENT_BINNING,
+      antiSmash: process.env.AI_SUMMARY_SYSTEM_CONTENT_ANTISMASH,
+      taxonomy: process.env.AI_SUMMARY_SYSTEM_CONTENT_TAXONOMY,
+      phylogeny: process.env.AI_SUMMARY_SYSTEM_CONTENT_PHYLOGENY,
+      refBased: process.env.AI_SUMMARY_SYSTEM_CONTENT_REF_BASED,
+      geneFamily: process.env.AI_SUMMARY_SYSTEM_CONTENT_GENE_FAMILY,
+    },
   },
   FILE_UPLOADS: {
     // Note: 10737418200 Bytes is 10 Gibibytes (10.7 Gigabytes).

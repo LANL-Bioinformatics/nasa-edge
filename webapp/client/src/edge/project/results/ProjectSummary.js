@@ -22,7 +22,7 @@ const ProjectSummary = (props) => {
         <div className="clearfix">
           <h4 className="pt-3">{props.project.name}</h4>
           <hr />
-          <b>Project Summary:</b>
+          <b>Project Summary</b>
           <hr></hr>
           <b>Description:</b> {props.project.desc}
           <br></br>

@@ -1,9 +1,11 @@
+import { Announcement } from '@mui/icons-material'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { colors } from 'src/util'
 
 export const apis = {
   publicProjects: '/api/public/projects',
+  announcement: '/api/user/announcement',
   register: '/api/user/register',
   login: '/api/user/login',
   oauthLogin: '/api/user/oauthLogin',
