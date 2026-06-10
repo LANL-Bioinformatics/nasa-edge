@@ -295,7 +295,7 @@ export const InputRawReads = (props) => {
         title={props.title}
         collapseParms={collapseParms}
         paramsOn={true}
-        id={'components[componentName]'}
+        id={'inputRawReads'}
         isValid={props.isValid}
         errMessage={props.errMessage}
       />
