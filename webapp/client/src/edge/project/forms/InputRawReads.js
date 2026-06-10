@@ -294,6 +294,7 @@ export const InputRawReads = (props) => {
         toggleParms={toggleParms}
         title={props.title}
         collapseParms={collapseParms}
+        paramsOn={true}
         id={'components[componentName]'}
         isValid={props.isValid}
         errMessage={props.errMessage}

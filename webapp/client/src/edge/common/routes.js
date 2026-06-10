@@ -16,8 +16,8 @@ const routes = [
   config.APP.SINGLE_USER_MODE_IS_ENABLED && { path: '/login', name: 'SingleLogin', element: SingleLogin },
   !config.APP.SINGLE_USER_MODE_IS_ENABLED && config.ORCID.IS_ENABLED && { path: '/oauth', name: 'OAuth', element: OAuth },
   // user/password login
-  { path: '/register', exact: true, name: 'Register', element: UserRegister },
-  config.APP.USER_AUTH_IS_ENABLED && {
+  !config.APP.SINGLE_USER_MODE_IS_ENABLED && config.APP.USER_AUTH_IS_ENABLED && { path: '/register', exact: true, name: 'Register', element: UserRegister },
+  !config.APP.SINGLE_USER_MODE_IS_ENABLED && config.APP.USER_AUTH_IS_ENABLED && {
     path: '/login',
     exact: true,
     name: 'Login',
