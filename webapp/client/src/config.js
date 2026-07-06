@@ -93,7 +93,7 @@ const config = {
     NAME: import.meta.env.VITE_NAME || 'EDGE',
     // Note about the distribution of this application. Can be shown in the login page.
     DISTRIBUTION_NOTE: import.meta.env.VITE_DISTRIBUTION_NOTE,
-     // user/password authentication
+    // user/password authentication
     USER_AUTH_IS_ENABLED: makeBoolean(import.meta.env.VITE_USER_AUTH_ENABLED),
     // Boolean flag indicating whether the client is configured for single-user deployments, and should be disabled in multi-user deployments.
     // Note: When this flag is `true`, the client will automatically register a single user with the email "singleuser@my.edge"

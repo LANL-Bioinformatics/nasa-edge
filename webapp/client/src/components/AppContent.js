@@ -12,7 +12,7 @@ import workflowPrivateRoutes from 'src/workflows/common/private-routes'
 
 const AppContent = () => {
   return (
-    <CContainer className="px-4" lg>
+    <CContainer className="px-4" fluid>
       <Suspense fallback={<CSpinner color="primary" />}>
         <Row className="justify-content-center">
           <Col xs="12" md="12" lg="12">
