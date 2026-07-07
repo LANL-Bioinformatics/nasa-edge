@@ -111,6 +111,8 @@ const config = {
     UPLOAD_IS_ENABLED: makeBoolean(import.meta.env.VITE_FILEUPLOAD_ENABLED),
     // Boolean flag indicating whether the client will allow user to upload files into folders.
     UPLOAD_FOLDER_IS_ENABLED: makeBoolean(import.meta.env.VITE_FILEUPLOAD_FOLDER_ENABLED),
+    // Boolean flag indicating whether the client disables the file upload share feature. Default is false, which means the feature is enabled.
+    UPLOAD_SHARE_IS_DISABLED: makeBoolean(import.meta.env.VITE_FILEUPLOAD_SHARE_DISABLED),
     // Boolean flag indicating whether the client will allow user to download SRA Data.
     SRADATA_IS_ENABLED: makeBoolean(import.meta.env.VITE_SRADATA_ENABLED),
     // Boolean flag indicating whether the client will offer support.
