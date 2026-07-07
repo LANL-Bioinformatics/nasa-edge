@@ -27,7 +27,7 @@ export const workflows = {
             <span style="font-size: 0.9rem; color: grey;"> A single-end or paired-end runsheet csv file containing assay metadata for each sample,
             including sample_id, forward (path to forward read), [reverse (path to reverse read, for paired-end only),] paired (boolean, TRUE | FALSE),
             groups (specifies sample treatment group name). Please see the <a href='https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/main/examples/runsheet' target='_blank' rel="noreferrer" >runsheet </a> in this repository for examples on how to format this file.
-            Note: If using an uploaded file, just add the file name without the local path.</span>`,
+            <br/><span style="font-style: italic;">Note: If using an uploaded file, just add the file name without the local path.</span></span>`,
           },
         ],
       },

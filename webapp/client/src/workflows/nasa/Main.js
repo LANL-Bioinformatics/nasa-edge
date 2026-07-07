@@ -206,7 +206,7 @@ const Main = (props) => {
             </>
           )}
         </div>
-
+        <br></br>
         <div className="edge-center">
           <Button
             color="primary"
