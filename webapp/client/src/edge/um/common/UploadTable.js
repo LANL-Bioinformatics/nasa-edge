@@ -497,7 +497,7 @@ const UploadTable = (props) => {
                       />
                     </Fab>
                   </Tooltip>
-                  {!config.APP.UPLOAD_SHARE_IS_DISABLED && (
+                  {config.APP.UPLOAD_SHARE_IS_ENABLED && (
                     <>
                       <Tooltip title="Share selected uploads" aria-label="share">
                         <Fab

@@ -265,7 +265,7 @@ const config = {
     BASE_URL: process.env.AI_SUMMARY_BASE_URL || 'https://api.openai.com/v1',
     CHAT_COMPLETIONS_PATH:
       process.env.AI_SUMMARY_CHAT_COMPLETIONS_PATH || '/chat/completions',
-    TEMPERATURE: makeFloatIfDefined(process.env.AI_SUMMARY_TEMPERATURE) ?? 0.2,
+    TEMPERATURE: makeFloatIfDefined(process.env.AI_SUMMARY_TEMPERATURE) || 0.2,
     MAX_OUTPUT_TOKENS:
       makeIntIfDefined(process.env.AI_SUMMARY_MAX_OUTPUT_TOKENS) || 300,
     MAX_USER_CHARS:
@@ -276,7 +276,9 @@ const config = {
       makeIntIfDefined(process.env.AI_SUMMARY_MAX_IMAGE_BYTES) || 1500000,
     REQUEST_TIMEOUT_MS:
       makeIntIfDefined(process.env.AI_SUMMARY_REQUEST_TIMEOUT_MS) || 120000,
-    INCLUDE_IMAGES: makeBoolean(process.env.AI_SUMMARY_INCLUDE_IMAGES ?? 'true'),
+    INCLUDE_IMAGES: makeBoolean(
+      process.env.AI_SUMMARY_INCLUDE_IMAGES || 'true',
+    ),
     SYSTEM_CONTENT_DEFAULT:
       process.env.AI_SUMMARY_SYSTEM_CONTENT ||
       DEFAULT_AI_SUMMARY_SYSTEM_CONTENT,
@@ -307,7 +309,19 @@ const config = {
     DELETION_GRACE_PERIOD_DAYS:
       makeIntIfDefined(process.env.FILE_UPLOADS_DELETION_GRACE_PERIOD_DAYS) ||
       5,
-    ALLOWED_EXTENSIONS: process.env.FILEUPLOAD_ALLOWED_EXTENSIONS || '',
+    ALLOWED_EXTENSIONS:
+      process.env.FILE_UPLOADS_ALLOWED_EXTENSIONS ||
+      // old setting name for backward compatibility
+      process.env.FILEUPLOAD_ALLOWED_EXTENSIONS ||
+      '',
+    // overwrite existing files with the same name in the upload list
+    OVERWRITE_EXISTING: makeBoolean(
+      process.env.FILE_UPLOADS_OVERWRITE_EXISTING,
+    ),
+    // create a directory for each user in the io/upload/users directory to link their uploaded files
+    USER_FOLDER_IS_ENABLED: makeBoolean(
+      process.env.FILE_UPLOADS_USER_FOLDER_IS_ENABLED,
+    ),
   },
   IO: {
     // Directory to store workflow results.
@@ -325,12 +339,15 @@ const config = {
     // Directory to store user uploaded files
     UPLOADED_FILES_DIR:
       process.env.UPLOADED_FILES_DIR || path.join(IO_BASE_DIR, 'upload/files'),
-    // Directory to store temporary files, including zip files for download.
-    TMP_BASE_DIR: process.env.TMP_BASE_DIR || path.join(IO_BASE_DIR, 'tmp'),
     // Directory used by file uploading function.
     UPLOADED_FILES_TEMP_DIR:
       process.env.UPLOADED_FILES_TEMP_DIR ||
       path.join(IO_BASE_DIR, 'upload/tmp'),
+    // Directory for users
+    UPLOADED_USER_DIR:
+      process.env.UPLOADED_USER_DIR || path.join(IO_BASE_DIR, 'upload/users'),
+    // Directory to store temporary files, including zip files for download.
+    TMP_BASE_DIR: process.env.TMP_BASE_DIR || path.join(IO_BASE_DIR, 'tmp'),
     // Directory to store JBrowse2 data.
     JBROWSE2_BASE_DIR:
       process.env.JBROWSE2_BASE_DIR || path.join(IO_BASE_DIR, 'jbrowse2'),

@@ -1,6 +1,7 @@
 const randomize = require('randomatic')
 const fs = require('fs')
 const Upload = require('../models/upload')
+const User = require('../models/user')
 const {
   updateUpload,
   getUploadedSize,
@@ -32,6 +33,19 @@ const addOne = async (req, res) => {
       })
     }
 
+    // delete old upload if overwrite is enabled
+    if (config.FILE_UPLOADS.OVERWRITE_EXISTING) {
+      const upload = await Upload.findOne({
+        name: data.name,
+        folder: data.folder,
+        owner: req.user.email,
+      })
+      if (upload) {
+        fs.unlink(`${config.IO.UPLOADED_FILES_DIR}/${upload.code}`, () => {})
+        await Upload.deleteOne({ code: upload.code })
+      }
+    }
+
     // upload file
     let code = `${randomize('Aa0', 16)}.${data.type}`
     let uploadHome = `${config.IO.UPLOADED_FILES_DIR}/${code}`
@@ -59,6 +73,32 @@ const addOne = async (req, res) => {
       code,
     })
     await newData.save()
+
+    // check if user folder is enabled
+    if (config.FILE_UPLOADS.USER_FOLDER_IS_ENABLED) {
+      const user = await User.findOne({ email: req.user.email })
+      if (!user) {
+        throw new Error(`User not found: ${req.user.email}`)
+      }
+      // user folder in upload directory
+      const userUploadDir = `${config.IO.UPLOADED_USER_DIR}/${user.id}`
+      if (!fs.existsSync(userUploadDir)) {
+        fs.mkdirSync(userUploadDir, { recursive: true })
+      }
+      const folder = data.folder.trim().replace(/\s+/g, '_')
+      if (folder) {
+        const folderPath = `${userUploadDir}/${folder}`
+        if (!fs.existsSync(folderPath)) {
+          fs.mkdirSync(folderPath, { recursive: true })
+        }
+      }
+      const target = `${userUploadDir}/${folder}/${data.name}`
+      // delete target if it exists
+      fs.unlinkSync(target, () => {})
+      // create a symlink to the uploaded file in the user folder
+      fs.symlinkSync(uploadHome, target)
+    }
+
     return res.send({
       message: 'Action successful',
       success: true,
@@ -150,6 +190,9 @@ const getInfo = async (req, res) => {
       maxFileSizeBytes: config.FILE_UPLOADS.MAX_FILE_SIZE_BYTES,
       allowedExtensions: config.FILE_UPLOADS.ALLOWED_EXTENSIONS,
       folderOptions: options,
+      note: config.FILE_UPLOADS.OVERWRITE_EXISTING
+        ? 'Warning: The system will overwrite any previously uploaded files with the same name in the upload list.'
+        : null,
       message: 'Action successful',
       success: true,
     })

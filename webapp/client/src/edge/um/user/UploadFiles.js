@@ -19,14 +19,9 @@ import config from 'src/config'
 const UploadFiles = (props) => {
   const defaultFolder = 'main'
   const [folder, setFolder] = useState(defaultFolder)
-  const [folderOptions, setFolderOptions] = useState([])
   const [submitting, setSubmitting] = useState(false)
-  const [uploadedSize, setUploadedSize] = useState(0)
+  const [uploadInfo, setUploadInfo] = useState({})
   const [uploadingSize, setUploadingSize] = useState(0)
-  const [maxStorageSizeBytes, setMaxStorageSizeBytes] = useState(0)
-  const [maxFileSizeBytes, setMaxFileSizeBytes] = useState(0)
-  const [daysKept, setDaysKept] = useState(0)
-  const [allowedExtensions, setAllowedExtensions] = useState([])
   const [files, setFiles] = useState([])
   const [updateSize, setUpdateSize] = useState(0)
   const [files2upload, setFiles2Upload] = useState(0)
@@ -37,12 +32,7 @@ const UploadFiles = (props) => {
     //get upload info
     getData(apis.uploadsInfo)
       .then((data) => {
-        setUploadedSize(data.uploadedSize)
-        setMaxStorageSizeBytes(data.maxStorageSizeBytes)
-        setMaxFileSizeBytes(data.maxFileSizeBytes)
-        setDaysKept(data.daysKept)
-        setFolderOptions(data.folderOptions)
-        setAllowedExtensions(data.allowedExtensions.split('|'))
+        setUploadInfo(data)
       })
       .catch((err) => {
         alert(err)
@@ -59,7 +49,7 @@ const UploadFiles = (props) => {
 
   const notValidFileExtension = (file) => {
     const ext = getFileExtension(file.meta.name)
-    return !allowedExtensions.includes(ext)
+    return !uploadInfo.allowedExtensions.split('|').includes(ext)
   }
 
   const validateFile = (file) => {
@@ -119,7 +109,7 @@ const UploadFiles = (props) => {
   const handleSubmit = (files, allFiles) => {
     setSubmitting(true)
     //check storage space
-    if (uploadedSize + uploadingSize > maxStorageSizeBytes) {
+    if (uploadInfo.uploadedSize + uploadingSize > uploadInfo.maxStorageSizeBytes) {
       alert(
         'Storage limit exceeded. Please remove file(s) from your uploading list or delete old uploaded file(s) from the server.',
       )
@@ -197,18 +187,26 @@ const UploadFiles = (props) => {
       <div className="clearfix">
         <h4 className="pt-3">Upload Files</h4>
         <span className="edge-text-font">
-          Max single file size is {formatFileSize(maxFileSizeBytes)}. Max server storage space is{' '}
-          {formatFileSize(maxStorageSizeBytes)}. Files will be kept for {daysKept} days.
+          Max single file size is {formatFileSize(uploadInfo.maxFileSizeBytes)}. Max server storage
+          space is {formatFileSize(uploadInfo.maxStorageSizeBytes)}. Files will be kept for{' '}
+          {uploadInfo.daysKept} days.
         </span>
         <br></br>
-        Allowed file extensions are: {allowedExtensions.join(', ')}
+        Allowed file extensions are: {uploadInfo.allowedExtensions?.split('|').join(', ')}
         <br></br>
+        {uploadInfo.note && (
+          <span className="red-text">
+            <br></br>
+            {uploadInfo.note}
+            <br></br>
+          </span>
+        )}
         <br></br>
         {config.APP.UPLOAD_FOLDER_IS_ENABLED && (
           <>
             Folder to store the uploaded files, default folder is &lsquo;{defaultFolder}&rsquo;
             <MyCreatableSelect
-              options={folderOptions}
+              options={uploadInfo.folderOptions}
               onChange={(e) => {
                 if (e) {
                   setFolder(e.value)
@@ -222,7 +220,8 @@ const UploadFiles = (props) => {
             <br></br>
           </>
         )}
-        Storage space usage: {formatFileSize(uploadedSize)}/{formatFileSize(maxStorageSizeBytes)}
+        Storage space usage: {formatFileSize(uploadInfo.uploadedSize)}/
+        {formatFileSize(uploadInfo.maxStorageSizeBytes)}
         <br></br>
         Uploading size: {formatFileSize(uploadingSize)}
         <Dropzone
@@ -230,7 +229,7 @@ const UploadFiles = (props) => {
           onSubmit={handleSubmit}
           accept="*"
           autoUpload={false}
-          maxSizeBytes={maxFileSizeBytes}
+          maxSizeBytes={uploadInfo.maxFileSizeBytes}
           validate={validateFile}
         />
       </div>
