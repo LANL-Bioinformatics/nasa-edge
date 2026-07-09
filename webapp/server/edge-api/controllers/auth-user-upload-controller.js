@@ -94,7 +94,11 @@ const addOne = async (req, res) => {
       }
       const target = `${userUploadDir}/${folder}/${data.name}`
       // delete target if it exists
-      fs.unlinkSync(target, () => {})
+      try {
+        fs.unlinkSync(target)
+      } catch (e) {
+        // Ignores all deletion errors
+      }
       // create a symlink to the uploaded file in the user folder
       fs.symlinkSync(uploadHome, target)
     }

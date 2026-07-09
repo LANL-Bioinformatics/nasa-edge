@@ -307,8 +307,7 @@ const config = {
     FILE_LIFETIME_DAYS:
       makeIntIfDefined(process.env.FILE_UPLOADS_FILE_LIFETIME_DAYS) || 180,
     DELETION_GRACE_PERIOD_DAYS:
-      makeIntIfDefined(process.env.FILE_UPLOADS_DELETION_GRACE_PERIOD_DAYS) ||
-      5,
+      process.env.FILE_UPLOADS_DELETION_GRACE_PERIOD_DAYS || 5,
     ALLOWED_EXTENSIONS:
       process.env.FILE_UPLOADS_ALLOWED_EXTENSIONS ||
       // old setting name for backward compatibility

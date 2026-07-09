@@ -14,7 +14,7 @@ const swaggerSpec = require('./edge-api/swagger/swaggerSpec')
 const logger = require('./utils/logger')
 const indexRouter = require('./indexRouter')
 const indexWorkflowRouter = require('./workflow/indexRouter')
-const { uploadMonitor } = require('./crons/uploadMonitor')
+const { fileUploadMonitor } = require('./crons/uploadMonitor')
 const {
   localWorkflowMonitor,
   localJobMonitor,
@@ -136,7 +136,7 @@ if (config.NODE_ENV === 'production') {
   })
   // monitor uploads every day at midnight
   cron.schedule(config.CRON.SCHEDULES.FILE_UPLOAD_MONITOR, async () => {
-    await uploadMonitor()
+    await fileUploadMonitor()
   })
   // monitor project status on every 1 minute
   cron.schedule(config.CRON.SCHEDULES.PROJECT_STATUS_MONITOR, async () => {

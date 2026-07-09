@@ -4,7 +4,7 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const cron = require('node-cron')
 const logger = require('./utils/logger')
-const { uploadMonitor } = require('./crons/uploadMonitor')
+const { fileUploadMonitor } = require('./crons/uploadMonitor')
 const {
   localWorkflowMonitor,
   localJobMonitor,
@@ -64,7 +64,7 @@ cron.schedule(config.CRON.SCHEDULES.NEXTFLOW_WORKFLOW_MONITOR, async () => {
 })
 // monitor uploads every day at midnight
 cron.schedule(config.CRON.SCHEDULES.FILE_UPLOAD_MONITOR, async () => {
-  await uploadMonitor()
+  await fileUploadMonitor()
 })
 // monitor project status on every 1 minute
 cron.schedule(config.CRON.SCHEDULES.PROJECT_STATUS_MONITOR, async () => {
