@@ -18,6 +18,8 @@ const nextflowConfigs = {
 const workflowList = {
   sra2fastq: {
     outdir: 'output/sra2fastq',
+    report: 'nextflow/report.html',
+    log: 'nextflow/.nextflow.log',
     nextflow_main: process.env.NEXTFLOW_MAIN
       ? `${process.env.NEXTFLOW_MAIN} -profile local`
       : `${config.NEXTFLOW.WORKFLOW_DIR}/sra2fastq/nextflow/main.nf -profile local`,
@@ -25,6 +27,8 @@ const workflowList = {
   },
   AmpIllumina: {
     outdir: 'output/AmpIllumina',
+    report: 'nextflow/report.html',
+    log: 'nextflow/.nextflow.log',
     nextflow_main: process.env.NEXTFLOW_MAIN
       ? `${process.env.NEXTFLOW_MAIN} -profile slurm,singularity`
       : `${config.NEXTFLOW.WORKFLOW_DIR}/nasa/nextflow/main.nf -profile slurm,singularity`,
@@ -39,7 +43,7 @@ const validUrl = url => {
   return regexp.test(url)
 }
 
-const getFilePath = async (dataPath, name, owner) => {
+const getFilePath = async (dataPath, name, folder, owner) => {
   // if name is a valid url, return it directly
   if (validUrl(name)) {
     return name
@@ -51,6 +55,7 @@ const getFilePath = async (dataPath, name, owner) => {
       const uploads = await Upload.find({
         status: { $ne: 'delete' },
         name,
+        folder,
         owner,
       }).sort({ updated: 1 })
       if (uploads.length === 0) {
@@ -98,12 +103,22 @@ const generateNextflowWorkflowParams = async (projHome, projectConf, proj) => {
             errMsg += `ERROR: Invalid number of columns in row ${index + 1} of the input csv file. Expected 4 or 5 columns, but got ${cols.length}.\n`
           }
 
-          const filePath1 = await getFilePath(dataPath, cols[1], proj.owner)
+          const filePath1 = await getFilePath(
+            dataPath,
+            cols[1].split('/')[0],
+            cols[1].split('/')[1] ? cols[1].split('/')[1] : 'main',
+            proj.owner,
+          )
           if (!filePath1) {
             errMsg += `ERROR: File not found for ${cols[0]} in row ${index + 1}: ${cols[1]}\n`
           }
           if (cols.length === 5) {
-            const filePath2 = await getFilePath(dataPath, cols[2], proj.owner)
+            const filePath2 = await getFilePath(
+              dataPath,
+              cols[2].split('/')[0],
+              cols[2].split('/')[1] ? cols[2].split('/')[1] : 'main',
+              proj.owner,
+            )
             if (!filePath2) {
               errMsg += `ERROR: File not found for ${cols[0]} in row ${index + 1}: ${cols[2]}\n`
             }
@@ -278,84 +293,121 @@ const generateWorkflowResult = proj => {
       result.differential_abundance = {
         ANCOMBC1: {
           plots: ['need find all ANCOMBC1 plots'],
-          'Sample Info': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/differential_abundance/SampleTable_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
-          'Pairwise Contrasts': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/differential_abundance/contrasts_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
-          'Differential Abundance': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/differential_abundance/ancombc1/ancombc1_differential_abundance_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
+          // check if the file exists before parsing
+          'Sample Info': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/differential_abundance/SampleTable_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/differential_abundance/SampleTable_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
+          'Pairwise Contrasts': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/differential_abundance/contrasts_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/differential_abundance/contrasts_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
+          'Differential Abundance': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/differential_abundance/ancombc1/ancombc1_differential_abundance_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/differential_abundance/ancombc1/ancombc1_differential_abundance_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
         },
         ANCOMBC2: {
           plots: ['need find all ANCOMBC2 plots'],
-          'Sample Info': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/differential_abundance/SampleTable_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
-          'Pairwise Contrasts': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/differential_abundance/contrasts_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
-          'Differential Abundance': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/differential_abundance/ancombc2/ancombc2_differential_abundance_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
+          'Sample Info': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/differential_abundance/SampleTable_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/differential_abundance/SampleTable_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
+          'Pairwise Contrasts': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/differential_abundance/contrasts_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/differential_abundance/contrasts_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
+          'Differential Abundance': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/differential_abundance/ancombc2/ancombc2_differential_abundance_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/differential_abundance/ancombc2/ancombc2_differential_abundance_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
         },
         DESeq2: {
           plots: ['need find all DESeq2 plots'],
-          'Sample Info': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/differential_abundance/SampleTable_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
-          'Pairwise Contrasts': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/differential_abundance/contrasts_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
-          'Differential Abundance': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/differential_abundance/deseq2/deseq2_differential_abundance_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
+          'Sample Info': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/differential_abundance/SampleTable_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/differential_abundance/SampleTable_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
+          'Pairwise Contrasts': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/differential_abundance/contrasts_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/differential_abundance/contrasts_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
+          'Differential Abundance': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/differential_abundance/deseq2/deseq2_differential_abundance_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/differential_abundance/deseq2/deseq2_differential_abundance_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
         },
       }
       result.differential_abundance.ANCOMBC1.plots = []
@@ -391,6 +443,7 @@ const generateWorkflowResult = proj => {
         }
       })
     }
+
     fs.writeFileSync(resultJson, JSON.stringify(result))
   }
 }

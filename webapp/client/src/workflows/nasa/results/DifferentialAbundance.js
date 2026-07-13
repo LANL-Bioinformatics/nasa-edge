@@ -114,8 +114,17 @@ export const DifferentialAbundance = (props) => {
       )}
       <br></br>
       <br></br>
-      {props.result[selectedButton] ? (
-        props.result[selectedButton]['plots'].map((html, id) => (
+      {props.result[selectedButton] && props.result[selectedButton]['plots'].length>20 && (
+      // if there are more than 20 plots, show a message to the user
+        <span style={{ color: 'red' }} >
+          There are {props.result[selectedButton]['plots'].length} plots generated for the {selectedButton} differential abundance analysis. Only the first 20 plots are shown below. Please find all plots in the Outputs section.
+          <br></br>
+          <br></br>
+        </span>
+      )}
+      {props.result[selectedButton] && props.result[selectedButton]['plots'].length>0 ? (
+        // only show top 20 plots
+        props.result[selectedButton]['plots'].slice(0, 20).map((html, id) => (
           <span key={id} title="Click to view the image in full screen">
             <a href={url + html} target="_blank" rel="noreferrer">
               <img src={url + html} alt={html} width="50%" height="50%"></img>
@@ -123,8 +132,8 @@ export const DifferentialAbundance = (props) => {
           </span>
         ))
       ) : (
-        <span>
-          No plots available
+        <span style={{ color: 'red' }} >
+          No outputs were generated for the {selectedButton} due to insufficient sample size.
           <br></br>
           <br></br>
         </span>

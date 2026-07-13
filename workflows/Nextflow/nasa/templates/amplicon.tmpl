@@ -57,6 +57,7 @@ params {
     filtered_R2_suffix       = "_R2_filtered.fastq.gz"
 
     // Directories
+    outdir              = "<%= projOutdir %>"
     raw_reads_dir       = "<%= projOutdir %>/Raw_Sequence_Data/"
     metadata_dir        = "<%= projOutdir %>/Metadata/"
     genelab_dir         = "<%= projOutdir %>/GeneLab/"
@@ -126,7 +127,7 @@ profiles {
          as setting it here takes precedence over setting the nextflow variable
         NXF_SINGULARITY_CACHEDIR=singularity/ in your run script
          */
-        //singularity.cacheDir   = "singularity/" // location of singularity images
+        singularity.cacheDir   = "/project/refdata/nextflow/.apptainer" // location of singularity images
         params.containerEngine = "singularity"
     }
 
@@ -192,12 +193,12 @@ process {
                   publishDir = [path: params.raw_reads_dir, mode: params.publishDir_mode]
             }
 
-    withName: "RAW_MULTIQC|TRIMMED_MULTIQC" {
+    withName: "RAW_MULTIQC|FILTERED_MULTIQC" {
                   conda = {params.conda_multiqc ? params.conda_multiqc : "${projectDir}/envs/multiqc.yaml"}
                   container = "quay.io/biocontainers/multiqc:1.27.1--pyhdfd78af_0"
             }
 
-    withName: "ZIP_MULTIQC_RAW|ZIP_MULTIQC_TRIMMED" {
+    withName: "ZIP_MULTIQC_RAW|ZIP_MULTIQC_FILTERED" {
                   publishDir = [path: params.fastqc_out_dir, mode: params.publishDir_mode]
             }
 
@@ -248,26 +249,7 @@ process {
 ********************** Workflow Resource Usage Capturing *********************
 ******************************************************************************/
 
-// Adapted from : https://github.com/nf-core/rnaseq/blob/master/nextflow.config
-def trace_timestamp = new java.util.Date().format( 'yyyy-MM-dd_HH-mm-ss')
-timeline {
-    enabled = true
-    overwrite = true
-    file    = "${params.outdir}/Resource_Usage/execution_timeline_${trace_timestamp}.html"
-}
-report {
-    enabled = true
-    overwrite = true
-    file    = "${params.outdir}/Resource_Usage/execution_report_${trace_timestamp}.html"
-}
-trace {
-    enabled = true
-    overwrite = true
-    file    = "${params.outdir}/Resource_Usage/execution_trace_${trace_timestamp}.txt"
-}
-
-
-
+<%- include (nfReports) %>
 
 /******************************************************************************
 **************************** Workflow Metadata ********************************
