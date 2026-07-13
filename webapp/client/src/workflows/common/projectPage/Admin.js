@@ -35,7 +35,7 @@ const Admin = (props) => {
       let url = `${apis.adminProjects}/${code}`
       getData(url)
         .then((data) => {
-          setProject(data.project)
+          setProject({ ...data.project, report: data.report })
           setLoading(false)
         })
         .catch((err) => {

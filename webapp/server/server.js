@@ -82,6 +82,12 @@ app.use(
   '/projects',
   express.static(config.IO.PROJECT_BASE_DIR, { dotfiles: 'allow' }),
 )
+if (process.env.EXECUTION_REPORTS_API_PATH) {
+  app.use(
+    `/${process.env.EXECUTION_REPORTS_API_PATH}`,
+    express.static(config.IO.EXECUTION_REPORTS, { dotfiles: 'allow' }),
+  )
+}
 app.use(
   '/bulksubmissions',
   express.static(config.IO.BULKSUBMISSION_BASE_DIR, { dotfiles: 'allow' }),

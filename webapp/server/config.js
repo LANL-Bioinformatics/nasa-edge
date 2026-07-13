@@ -326,6 +326,8 @@ const config = {
     // Directory to store workflow results.
     PROJECT_BASE_DIR:
       process.env.PROJECTS_BASE_DIR || path.join(IO_BASE_DIR, 'projects'),
+    // Directory to store project error logs.
+    EXECUTION_REPORTS: path.join(IO_BASE_DIR, 'execution_reports'),
     // Directory to store bulk submission.
     BULKSUBMISSION_BASE_DIR:
       process.env.BULKSUBMISSION_BASE_DIR ||

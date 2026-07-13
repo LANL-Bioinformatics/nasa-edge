@@ -241,7 +241,10 @@ export const isValidEvalue = (inputValue) => {
   return regexp.test(inputValue.replace(/\s+/g, ' ').trim())
 }
 
-export const isValidSRAAccessionInput = (accessions) => {
+export const isValidSRAAccessionInput = (accessions, optional) => {
+  if (optional && accessions.trim() === '') {
+    return true
+  }
   const parts = accessions.split(',')
   for (var i = 0; i < parts.length; i++) {
     if (!isValidSRAAccession(parts[i])) {

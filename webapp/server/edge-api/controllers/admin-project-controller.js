@@ -1,3 +1,5 @@
+const fs = require('fs')
+const path = require('path')
 const Project = require('../models/project')
 const {
   getProject,
@@ -9,7 +11,9 @@ const {
   getProjectRunStats,
 } = require('../utils/project')
 const logger = require('../../utils/logger')
+const { linkCopyFile } = require('../../utils/common')
 const config = require('../../config')
+const { workflowList } = require('../../workflow/util')
 
 const sysError = config.APP.API_ERROR
 
@@ -30,8 +34,45 @@ const getOne = async (req, res) => {
         success: false,
       })
     }
+    // get report/log file if project is failed or complete
+    let report = null
+    if (project.status === 'failed' || project.status === 'complete') {
+      const projHome = `${config.IO.PROJECT_BASE_DIR}/${project.code}`
+      // eslint-disable-next-line no-nested-ternary
+      const reportPath = fs.existsSync(
+        `${projHome}/${workflowList[project.type].report}`,
+      )
+        ? `${projHome}/${workflowList[project.type].report}`
+        : fs.existsSync(`${projHome}/${workflowList[project.type].log}`)
+          ? `${projHome}/${workflowList[project.type].log}`
+          : null
+
+      if (reportPath) {
+        // create project directory in EXECUTION_REPORTS if not exist
+        if (!fs.existsSync(`${config.IO.EXECUTION_REPORTS}/${project.code}`)) {
+          fs.mkdirSync(`${config.IO.EXECUTION_REPORTS}/${project.code}`, {
+            recursive: true,
+          })
+        }
+        if (
+          !fs.existsSync(
+            `${config.IO.EXECUTION_REPORTS}/${project.code}/${path.basename(reportPath)}`,
+          )
+        ) {
+          await linkCopyFile(
+            reportPath,
+            `${config.IO.EXECUTION_REPORTS}/${project.code}`,
+            'link',
+            false,
+          )
+        }
+        report = `${process.env.EXECUTION_REPORTS_API_PATH}/${project.code}/${path.basename(reportPath)}`
+      }
+    }
+
     return res.send({
       project,
+      report,
       message: 'Action successful',
       success: true,
     })

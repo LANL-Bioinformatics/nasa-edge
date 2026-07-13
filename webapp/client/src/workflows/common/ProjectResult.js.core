@@ -191,6 +191,21 @@ const ProjectResult = (props) => {
         </div>
       ) : (
         <>
+          {project && project.report && (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                color="warning"
+                href={project.report}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Execution Report
+              </Button>
+              &nbsp;&nbsp;
+            </>
+          )}
           {project && project.status === 'failed' && props.type !== 'public' && (
             <>
               <Button type="button" size="sm" color="primary" onClick={viewLogFile}>

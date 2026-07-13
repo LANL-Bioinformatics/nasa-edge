@@ -287,14 +287,14 @@ const pidIsRunning = pid => {
   }
 }
 
-const linkCopyFile = async (file, dir, action, uploadOnly) => {
+const linkCopyFile = async (file, dir, action, uploadOnly, newFileName) => {
   try {
     // create dir
     const inputDir = dir
     if (!fs.existsSync(inputDir)) {
       fs.mkdirSync(inputDir)
     }
-    let name = path.basename(file)
+    let name = newFileName || path.basename(file)
     let linkedName = `${inputDir}/${name}`
     if (file.startsWith(config.IO.UPLOADED_FILES_DIR)) {
       // link uploaded file with realname
