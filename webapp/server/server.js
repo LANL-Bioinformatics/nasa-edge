@@ -181,6 +181,34 @@ if (config.NODE_ENV === 'production') {
   })
 }
 
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  const healthCheck = {
+    status: 'UP',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    services: {
+      database: 'DOWN',
+    },
+  }
+
+  try {
+    // Check if the database connection is alive (readyState 1 means connected)
+    if (mongoose.connection.readyState === 1) {
+      healthCheck.services.database = 'UP'
+    } else {
+      throw new Error('Database not connected')
+    }
+
+    // If all checks pass, return HTTP 200
+    res.status(200).json(healthCheck)
+  } catch (error) {
+    // If any critical check fails, mark the master status as DOWN
+    healthCheck.status = 'DOWN'
+    res.status(503).json(healthCheck) // 503 Service Unavailable
+  }
+})
+
 const runApp = async () => {
   try {
     // Connect to MongoDB
