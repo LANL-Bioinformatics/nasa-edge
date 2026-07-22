@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { Badge } from 'reactstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { MaterialReactTable } from 'material-react-table'
@@ -62,7 +62,6 @@ const UserTable = (props) => {
   }
 
   const handleDeleteRow = useCallback((row) => {
-    // eslint-disable-next-line no-restricted-globals
     if (!confirm(`Are you sure you want to delete ${row.getValue('email')}`)) {
       return
     }
@@ -223,18 +222,19 @@ const UserTable = (props) => {
       {
         header: 'Created',
         accessorKey: 'created',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
         enableEditing: false,
         enableColumnFilter: false,
       },
       {
         header: 'Updated',
         accessorKey: 'updated',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
         enableEditing: false,
         enableColumnFilter: false,
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [getCommonEditTextFieldProps],
   )
 

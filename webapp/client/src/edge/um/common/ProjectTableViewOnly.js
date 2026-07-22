@@ -5,7 +5,7 @@ import { MaterialReactTable } from 'material-react-table'
 import { ThemeProvider, Box, IconButton, Tooltip } from '@mui/material'
 import Fab from '@mui/material/Fab'
 import { Refresh, Explore } from '@mui/icons-material'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { theme, projectStatusColors, projectStatusNames } from '../common/tableUtil'
 import { getData } from '../../common/util'
 import { workflowList } from 'src/util'
@@ -43,14 +43,14 @@ const ProjectTableViewOnly = (props) => {
       {
         header: 'Created',
         accessorKey: 'created',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
         enableEditing: false,
         enableColumnFilter: false,
       },
       {
         header: 'Updated',
         accessorKey: 'updated',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
         enableEditing: false,
         enableColumnFilter: false,
       },

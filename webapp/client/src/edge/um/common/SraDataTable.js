@@ -18,7 +18,7 @@ import {
   LockOpen,
   Explore,
 } from '@mui/icons-material'
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 import { updateProjectAdmin } from 'src/redux/reducers/edge/adminSlice'
 import { updateProject } from 'src/redux/reducers/edge/userSlice'
@@ -202,18 +202,19 @@ const SraDataTable = (props) => {
       {
         header: 'Created',
         accessorKey: 'created',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
         enableEditing: false,
         enableColumnFilter: false,
       },
       {
         header: 'Updated',
         accessorKey: 'updated',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
         enableEditing: false,
         enableColumnFilter: false,
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [getCommonEditTextFieldProps],
   )
 

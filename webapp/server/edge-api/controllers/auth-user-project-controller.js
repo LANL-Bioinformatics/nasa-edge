@@ -1,6 +1,6 @@
 const randomize = require('randomatic')
 const fs = require('fs')
-const moment = require('moment')
+const dayjs = require('dayjs')
 const Project = require('../models/project')
 const {
   getProject,
@@ -369,7 +369,7 @@ const getFiles = async (req, res) => {
       })
 
       if (proj.type === 'sra2fastq') {
-        projName += ` (${moment(proj.created).format('YYYY-MM-DD, h:mm:ss A')})`
+        projName += ` (${dayjs(proj.created).format('YYYY-MM-DD, h:mm:ss A')})`
         files = getAllFiles(
           `${projDir}/${proj.code}/${outdir}`,
           files,
@@ -380,7 +380,7 @@ const getFiles = async (req, res) => {
           req.body.endsWith,
         )
       } else {
-        projName += ` (${proj.type}, ${moment(proj.created).format('YYYY-MM-DD, h:mm:ss A')})`
+        projName += ` (${proj.type}, ${dayjs(proj.created).format('YYYY-MM-DD, h:mm:ss A')})`
         files = getAllFiles(
           `${projDir}/${proj.code}/${outdir}`,
           files,

@@ -1,5 +1,8 @@
 const fs = require('fs')
-const moment = require('moment')
+const dayjs = require('dayjs')
+const duration = require('dayjs/plugin/duration')
+// Activate the plugin
+dayjs.extend(duration)
 const Job = require('../edge-api/models/job')
 const { generateWorkflowResult, checkFlagFile } = require('../workflow/util')
 const { timeFormat, execCmd, pidIsRunning } = require('./common')
@@ -9,10 +12,10 @@ const config = require('../config')
 const generateRunStats = async project => {
   const timeStats = ['complete', 'failed', 'aborted']
   const job = await Job.findOne({ project: project.code })
-  let startTime = moment(job.created, 'YYYY-MM-DD HH:mm:ss')
+  let startTime = dayjs(job.created, 'YYYY-MM-DD HH:mm:ss')
   let endTime = timeStats.includes(project.status)
-    ? moment(job.updated, 'YYYY-MM-DD HH:mm:ss')
-    : moment(Date.now())
+    ? dayjs(job.updated, 'YYYY-MM-DD HH:mm:ss')
+    : dayjs(Date.now())
   // get time from run_time.txt if exists, which is more accurate for local workflow
   // Thu May 28 09:07:15 AM MDT 2026
   // Thu May 28 09:08:09 AM MDT 2026
@@ -21,20 +24,20 @@ const generateRunStats = async project => {
     const runTimeContent = String(fs.readFileSync(runTimeFile)).split('\n')
     if (
       runTimeContent[0] &&
-      moment(runTimeContent[0], 'ddd MMM DD HH:mm:ss A Z YYYY').isValid()
+      dayjs(runTimeContent[0], 'ddd MMM DD HH:mm:ss A Z YYYY').isValid()
     ) {
-      startTime = moment(runTimeContent[0], 'ddd MMM DD HH:mm:ss A Z YYYY')
+      startTime = dayjs(runTimeContent[0], 'ddd MMM DD HH:mm:ss A Z YYYY')
     }
     if (
       runTimeContent[1] &&
-      moment(runTimeContent[1], 'ddd MMM DD HH:mm:ss A Z YYYY').isValid()
+      dayjs(runTimeContent[1], 'ddd MMM DD HH:mm:ss A Z YYYY').isValid()
     ) {
-      endTime = moment(runTimeContent[1], 'ddd MMM DD HH:mm:ss A Z YYYY')
+      endTime = dayjs(runTimeContent[1], 'ddd MMM DD HH:mm:ss A Z YYYY')
     }
   }
 
   const ms = endTime.diff(startTime)
-  const d = moment.duration(ms)
+  const d = dayjs.duration(ms)
   const stats = []
   stats.push({
     Workflow: job.type,

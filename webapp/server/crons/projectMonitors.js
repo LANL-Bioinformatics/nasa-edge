@@ -1,5 +1,5 @@
 const fs = require('fs')
-const moment = require('moment')
+const dayjs = require('dayjs')
 const Project = require('../edge-api/models/project')
 const Job = require('../edge-api/models/job')
 const User = require('../edge-api/models/user')
@@ -52,7 +52,7 @@ const projectDeletionMonitor = async () => {
   logger.debug('project deletion monitor')
   try {
     // delete project after deleteGracePeriod
-    const deleteGracePeriod = moment().subtract(
+    const deleteGracePeriod = dayjs().subtract(
       config.CRON.PROJECT_DELETION_GRACE_PERIOD_DAYS,
       'days',
     )

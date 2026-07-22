@@ -1,5 +1,5 @@
 import { Badge } from 'reactstrap'
-import Moment from 'react-moment'
+import dayjs from 'dayjs'
 
 import { useSelector } from 'react-redux'
 import { projectStatusColors, projectStatusNames } from '../../um/common/tableUtil'
@@ -32,7 +32,7 @@ const ProjectSummary = (props) => {
               <br></br>
             </>
           )}
-          <b>Submission Time:</b> <Moment>{props.project.created}</Moment>
+          <b>Submission Time:</b> {dayjs(props.project.created).format('dddd, MMMM D, YYYY h:mm A')}
           <br></br>
           <b>Status:</b>{' '}
           <Badge color={projectStatusColors[props.project.status]}>

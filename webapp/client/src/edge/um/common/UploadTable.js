@@ -16,7 +16,7 @@ import {
   Lock,
   LockOpen,
 } from '@mui/icons-material'
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 import { updateUploadAdmin } from 'src/redux/reducers/edge/adminSlice'
 import { updateUpload } from 'src/redux/reducers/edge/userSlice'
@@ -200,14 +200,14 @@ const UploadTable = (props) => {
       {
         header: 'Created',
         accessorKey: 'created',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
         enableEditing: false,
         enableColumnFilter: false,
       },
       {
         header: 'Updated',
         accessorKey: 'updated',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
         enableEditing: false,
         enableColumnFilter: false,
       },

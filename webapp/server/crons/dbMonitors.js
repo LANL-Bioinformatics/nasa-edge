@@ -1,5 +1,5 @@
 const { exec } = require('child_process')
-const moment = require('moment')
+const dayjs = require('dayjs')
 const findRemoveSync = require('find-remove')
 
 const logger = require('../utils/logger')
@@ -18,7 +18,7 @@ const dbBackupClean = () => {
 const dbBackup = () => {
   logger.debug('DB backup')
   // mongodump
-  const dateStringWithTime = moment(new Date()).format('YYYY-MM-DD:HH:mm')
+  const dateStringWithTime = dayjs(new Date()).format('YYYY-MM-DD:HH:mm')
   const cmd = `mongodump --db ${config.DATABASE.NAME} --out ${config.DATABASE.BACKUP_DIR}/db-backup_${dateStringWithTime}`
 
   logger.info(cmd)

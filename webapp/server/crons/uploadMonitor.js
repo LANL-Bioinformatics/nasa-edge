@@ -1,5 +1,5 @@
 const fs = require('fs')
-const moment = require('moment')
+const dayjs = require('dayjs')
 const Upload = require('../edge-api/models/upload')
 const User = require('../edge-api/models/user')
 const logger = require('../utils/logger')
@@ -9,7 +9,7 @@ const fileUploadMonitor = async () => {
   logger.debug('file upload monitor')
   try {
     // delete file after deleteGracePeriod
-    const deleteGracePeriod = moment().subtract(
+    const deleteGracePeriod = dayjs().subtract(
       config.FILE_UPLOADS.DELETION_GRACE_PERIOD_DAYS,
       'days',
     )
@@ -53,7 +53,7 @@ const fileUploadMonitor = async () => {
     }
 
     // change status to 'delete' if upload is older than daysKept
-    const daysKept = moment().subtract(
+    const daysKept = dayjs().subtract(
       config.FILE_UPLOADS.FILE_LIFETIME_DAYS,
       'days',
     )

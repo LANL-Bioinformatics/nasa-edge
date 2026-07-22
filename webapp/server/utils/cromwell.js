@@ -1,5 +1,8 @@
 const fs = require('fs')
-const moment = require('moment')
+const dayjs = require('dayjs')
+const duration = require('dayjs/plugin/duration')
+// Activate the plugin
+dayjs.extend(duration)
 const FormData = require('form-data')
 const ejs = require('ejs')
 const Job = require('../edge-api/models/job')
@@ -247,21 +250,19 @@ const getWorkflowStats = (
       const { end } = jobStats.calls[cromwellCall][0]
 
       if (start && !workflowStats.Start) {
-        workflowStats.Start = moment(start).format('YYYY-MM-DD HH:mm:ss')
+        workflowStats.Start = dayjs(start).format('YYYY-MM-DD HH:mm:ss')
         myStart = start
       }
       if (end) {
-        workflowStats.End = moment(end).format('YYYY-MM-DD HH:mm:ss')
+        workflowStats.End = dayjs(end).format('YYYY-MM-DD HH:mm:ss')
         myEnd = end
       }
     }
   })
 
   if (myStart && myEnd) {
-    const ms = moment(myEnd, 'YYYY-MM-DD HH:mm:ss').diff(
-      moment(myStart, 'YYYY-MM-DD HH:mm:ss'),
-    )
-    const d = moment.duration(ms)
+    const ms = dayjs(myEnd).diff(dayjs(myStart))
+    const d = dayjs.duration(ms)
     workflowStats['Running Time'] = timeFormat(d)
   }
   stats.push(workflowStats)

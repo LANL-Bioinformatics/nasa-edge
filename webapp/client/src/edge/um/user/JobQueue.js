@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { MaterialReactTable } from 'material-react-table'
 import { Badge } from 'reactstrap'
 import { ThemeProvider } from '@mui/material'
@@ -33,12 +33,12 @@ const JobQueue = () => {
       {
         accessorKey: 'created',
         header: 'Created',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
       },
       {
         accessorKey: 'updated',
         header: 'Updated',
-        Cell: ({ cell }) => <>{moment(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
+        Cell: ({ cell }) => <>{dayjs(cell.getValue()).format('MM/DD/YYYY, h:mm:ss A')}</>,
       },
     ],
     [],

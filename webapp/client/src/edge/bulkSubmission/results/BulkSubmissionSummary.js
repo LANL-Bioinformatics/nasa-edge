@@ -1,5 +1,5 @@
 import { Badge } from 'reactstrap'
-import Moment from 'react-moment'
+import dayjs from 'dayjs'
 import { IoMdDownload } from 'react-icons/io'
 import { useSelector } from 'react-redux'
 
@@ -35,7 +35,8 @@ const BulkSubmissionSummary = (props) => {
               <br></br>
             </>
           )}
-          <b>Submission Time:</b> <Moment>{props.bulkSubmission.created}</Moment>
+          <b>Submission Time:</b>{' '}
+          {dayjs(props.bulkSubmission.created).format('dddd, MMMM D, YYYY h:mm A')}
           <br></br>
           <b>Status:</b>{' '}
           <Badge color={bulkSubmissionStatusColors[props.bulkSubmission.status]}>

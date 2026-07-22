@@ -98,7 +98,7 @@ const getWorkflowCommand = proj => {
         params: { ...projectConf.workflow.input, ...projectConf.genomes },
       }),
     )
-    command += ` && ${workflowConfig.WORKFLOW.BIOAI_EXEC} -i ${conf} -o ${outDir}`
+    command += ` && ${workflowConfig.WORKFLOW.BIOAI_EXEC} -i ${conf} -e ${projectConf} -o ${outDir}`
   }
   return command
 }
