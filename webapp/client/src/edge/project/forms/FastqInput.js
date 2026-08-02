@@ -14,6 +14,7 @@ export const FastqInput = (props) => {
   const [form, setState] = useState({
     ...components[componentName].init,
     platform: props.seqPlatformDefaultValue,
+    platform_display: props.seqPlatformDefaultDisplay,
   })
   const [doValidation, setDoValidation] = useState(0)
   const [inspectionNotice, setInspectionNotice] = useState({
