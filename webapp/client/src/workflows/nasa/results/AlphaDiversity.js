@@ -21,60 +21,77 @@ export const AlphaDiversity = (props) => {
       , of the GeneLab Amplicon Sequencing Pipeline document on GitHub.
       <br></br>
       <br></br>
-      {props.result ? (
-        props.result['plots'].map((html, id) => (
-          <span key={id} title="Click to view the image in full screen">
-            <a href={url + html} target="_blank" rel="noreferrer">
-              <img src={url + html} alt={html} width="50%" height="50%"></img>
-            </a>
-          </span>
-        ))
-      ) : (
+      {props.result?.error ? (
         <span>
-          No plots available
-          <br></br>
-          <br></br>
+          No alpha diversity output files were generated. Please click{' '}
+          <a
+            href={url + props.result.error}
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: 'red', textDecoration: 'none' }}
+          >
+            here
+          </a>{' '}
+          for more information.
         </span>
-      )}
-      <br></br>
-      <br></br>
-      <span className="edge-link-large" onClick={() => setTable1Open(!table1Open)}>
-        Metric Statistics
-      </span>
-      {table1Open && (
+      ) : (
         <>
-          {props.result['statistics'] ? (
-            <JsonTable
-              data={props.result['statistics']}
-              headers={Object.keys(props.result['statistics'][0])}
-            />
+          {props.result ? (
+            props.result['plots'].map((html, id) => (
+              <span key={id} title="Click to view the image in full screen">
+                <a href={url + html} target="_blank" rel="noreferrer">
+                  <img src={url + html} alt={html} width="50%" height="50%"></img>
+                </a>
+              </span>
+            ))
           ) : (
             <span>
+              No plots available
               <br></br>
-              Empty table
+              <br></br>
             </span>
           )}
           <br></br>
-        </>
-      )}
-      <br></br>
-      <span className="edge-link-large" onClick={() => setTable2Open(!table2Open)}>
-        Metric Summary
-      </span>
-      {table2Open && (
-        <>
-          {props.result['summary'] ? (
-            <JsonTable
-              data={props.result['summary']}
-              headers={Object.keys(props.result['summary'][0])}
-            />
-          ) : (
-            <span>
+          <br></br>
+          <span className="edge-link-large" onClick={() => setTable1Open(!table1Open)}>
+            Metric Statistics
+          </span>
+          {table1Open && (
+            <>
+              {props.result['statistics'] ? (
+                <JsonTable
+                  data={props.result['statistics']}
+                  headers={Object.keys(props.result['statistics'][0])}
+                />
+              ) : (
+                <span>
+                  <br></br>
+                  Empty table
+                </span>
+              )}
               <br></br>
-              Empty table
-            </span>
+            </>
           )}
           <br></br>
+          <span className="edge-link-large" onClick={() => setTable2Open(!table2Open)}>
+            Metric Summary
+          </span>
+          {table2Open && (
+            <>
+              {props.result['summary'] ? (
+                <JsonTable
+                  data={props.result['summary']}
+                  headers={Object.keys(props.result['summary'][0])}
+                />
+              ) : (
+                <span>
+                  <br></br>
+                  Empty table
+                </span>
+              )}
+              <br></br>
+            </>
+          )}
         </>
       )}
     </>

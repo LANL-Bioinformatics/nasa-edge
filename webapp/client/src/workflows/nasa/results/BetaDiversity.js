@@ -23,85 +23,102 @@ export const BetaDiversity = (props) => {
       , of the GeneLab Amplicon Sequencing Pipeline document on GitHub.
       <br></br>
       <br></br>
-      <ButtonGroup className="mr-3" aria-label="First group" size="sm">
-        <Button
-          key={'beta-1'}
-          color="outline-primary"
-          onClick={() => {
-            setSelectedButton('Bray-Curtis dissimilarity')
-          }}
-          active={selectedButton === 'Bray-Curtis dissimilarity'}
-        >
-          {'Bray-Curtis dissimilarity'}
-        </Button>
-        <Button
-          key={'beta-2'}
-          color="outline-primary"
-          onClick={() => {
-            setSelectedButton('Euclidean distance')
-          }}
-          active={selectedButton === 'Euclidean distance'}
-        >
-          {'Euclidean distance'}
-        </Button>
-      </ButtonGroup>
-      <br></br>
-      <br></br>
-      {props.result[selectedButton] ? (
-        props.result[selectedButton]['plots'].map((html, id) => (
-          <span key={id} title="Click to view the image in full screen">
-            <a href={url + html} target="_blank" rel="noreferrer">
-              <img src={url + html} alt={html} width="50%" height="50%"></img>
-            </a>
-          </span>
-        ))
-      ) : (
+      {props.result?.error ? (
         <span>
-          No plots available
-          <br></br>
-          <br></br>
+          No beta diversity output files were generated. Please click{' '}
+          <a
+            href={url + props.result.error}
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: 'red', textDecoration: 'none' }}
+          >
+            here
+          </a>{' '}
+          for more information.
         </span>
-      )}
-      <br></br>
-      <br></br>
-      <span className="edge-link-large" onClick={() => setTable1Open(!table1Open)}>
-        Adonis Statistics
-      </span>
-      {table1Open && (
+      ) : (
         <>
-          {props.result[selectedButton]['adonis statistics'] ? (
-            <JsonTable
-              data={props.result[selectedButton]['adonis statistics']}
-              headers={Object.keys(props.result[selectedButton]['adonis statistics'][0])}
-            />
+          <ButtonGroup className="mr-3" aria-label="First group" size="sm">
+            <Button
+              key={'beta-1'}
+              color="outline-primary"
+              onClick={() => {
+                setSelectedButton('Bray-Curtis dissimilarity')
+              }}
+              active={selectedButton === 'Bray-Curtis dissimilarity'}
+            >
+              {'Bray-Curtis dissimilarity'}
+            </Button>
+            <Button
+              key={'beta-2'}
+              color="outline-primary"
+              onClick={() => {
+                setSelectedButton('Euclidean distance')
+              }}
+              active={selectedButton === 'Euclidean distance'}
+            >
+              {'Euclidean distance'}
+            </Button>
+          </ButtonGroup>
+          <br></br>
+          <br></br>
+          {props.result[selectedButton] ? (
+            props.result[selectedButton]['plots'].map((html, id) => (
+              <span key={id} title="Click to view the image in full screen">
+                <a href={url + html} target="_blank" rel="noreferrer">
+                  <img src={url + html} alt={html} width="50%" height="50%"></img>
+                </a>
+              </span>
+            ))
           ) : (
             <span>
+              No plots available
               <br></br>
-              Empty table
+              <br></br>
             </span>
           )}
-        </>
-      )}
-      <br></br>
-      <span className="edge-link-large" onClick={() => setTable2Open(!table2Open)}>
-        Variance Statistics
-      </span>
-      {table2Open && (
-        <>
-          {props.result[selectedButton]['variance statistics'] ? (
-            <JsonTable
-              data={props.result[selectedButton]['variance statistics']}
-              headers={Object.keys(props.result[selectedButton]['variance statistics'][0])}
-            />
-          ) : (
-            <span>
-              <br></br>
-              Empty table
-            </span>
+          <br></br>
+          <br></br>
+          <span className="edge-link-large" onClick={() => setTable1Open(!table1Open)}>
+            Adonis Statistics
+          </span>
+          {table1Open && (
+            <>
+              {props.result[selectedButton]['adonis statistics'] ? (
+                <JsonTable
+                  data={props.result[selectedButton]['adonis statistics']}
+                  headers={Object.keys(props.result[selectedButton]['adonis statistics'][0])}
+                />
+              ) : (
+                <span>
+                  <br></br>
+                  Empty table
+                </span>
+              )}
+            </>
           )}
+          <br></br>
+          <span className="edge-link-large" onClick={() => setTable2Open(!table2Open)}>
+            Variance Statistics
+          </span>
+          {table2Open && (
+            <>
+              {props.result[selectedButton]['variance statistics'] ? (
+                <JsonTable
+                  data={props.result[selectedButton]['variance statistics']}
+                  headers={Object.keys(props.result[selectedButton]['variance statistics'][0])}
+                />
+              ) : (
+                <span>
+                  <br></br>
+                  Empty table
+                </span>
+              )}
+            </>
+          )}
+          <br></br>
         </>
       )}
-      <br></br>
     </>
   )
 }

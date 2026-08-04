@@ -185,46 +185,72 @@ const generateWorkflowResult = proj => {
           `${workflowList[projectConf.workflow.name].outdir}/workflow_output/Final_Outputs/alpha_diversity/richness_and_diversity_estimates_by_group_GLAmpSeq.png`,
           `${workflowList[projectConf.workflow.name].outdir}/workflow_output/Final_Outputs/alpha_diversity/richness_and_diversity_estimates_by_sample_GLAmpSeq.png`,
         ],
-        statistics: Papa.parse(
-          fs
-            .readFileSync(
-              `${outdir}/workflow_output/Final_Outputs/alpha_diversity/statistics_table_GLAmpSeq.csv`,
-            )
-            .toString(),
-          { delimiter: ',', header: true, skipEmptyLines: true },
-        ).data,
-        summary: Papa.parse(
-          fs
-            .readFileSync(
-              `${outdir}/workflow_output/Final_Outputs/alpha_diversity/summary_table_GLAmpSeq.csv`,
-            )
-            .toString(),
-          { delimiter: ',', header: true, skipEmptyLines: true },
-        ).data,
+        statistics: fs.existsSync(
+          `${outdir}/workflow_output/Final_Outputs/alpha_diversity/statistics_table_GLAmpSeq.csv`,
+        )
+          ? Papa.parse(
+              fs
+                .readFileSync(
+                  `${outdir}/workflow_output/Final_Outputs/alpha_diversity/statistics_table_GLAmpSeq.csv`,
+                )
+                .toString(),
+              { delimiter: ',', header: true, skipEmptyLines: true },
+            ).data
+          : [],
+        summary: fs.existsSync(
+          `${outdir}/workflow_output/Final_Outputs/alpha_diversity/summary_table_GLAmpSeq.csv`,
+        )
+          ? Papa.parse(
+              fs
+                .readFileSync(
+                  `${outdir}/workflow_output/Final_Outputs/alpha_diversity/summary_table_GLAmpSeq.csv`,
+                )
+                .toString(),
+              { delimiter: ',', header: true, skipEmptyLines: true },
+            ).data
+          : [],
+        error: fs.existsSync(
+          `${outdir}/workflow_output/Final_Outputs/alpha_diversity/alpha_diversity_failure_GLAmpSeq.txt`,
+        )
+          ? `${workflowList[projectConf.workflow.name].outdir}/workflow_output/Final_Outputs/alpha_diversity/alpha_diversity_failure_GLAmpSeq.txt`
+          : null,
       }
       result.beta_diversity = {
+        error: fs.existsSync(
+          `${outdir}/workflow_output/Final_Outputs/beta_diversity/beta_diversity_failure_GLAmpSeq.txt`,
+        )
+          ? `${workflowList[projectConf.workflow.name].outdir}/workflow_output/Final_Outputs/beta_diversity/beta_diversity_failure_GLAmpSeq.txt`
+          : null,
         'Bray-Curtis dissimilarity': {
           plots: [
             `${workflowList[projectConf.workflow.name].outdir}/workflow_output/Final_Outputs/beta_diversity/bray_PCoA_w_labels_GLAmpSeq.png`,
             `${workflowList[projectConf.workflow.name].outdir}/workflow_output/Final_Outputs/beta_diversity/bray_PCoA_without_labels_GLAmpSeq.png`,
             `${workflowList[projectConf.workflow.name].outdir}/workflow_output/Final_Outputs/beta_diversity/bray_dendrogram_GLAmpSeq.png`,
           ],
-          'adonis statistics': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/beta_diversity/bray_adonis_table_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
-          'variance statistics': Papa.parse(
-            fs
-              .readFileSync(
-                `${outdir}/workflow_output/Final_Outputs/beta_diversity/bray_variance_table_GLAmpSeq.csv`,
-              )
-              .toString(),
-            { delimiter: ',', header: true, skipEmptyLines: true },
-          ).data,
+          'adonis statistics': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/beta_diversity/bray_adonis_table_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/beta_diversity/bray_adonis_table_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
+          'variance statistics': fs.existsSync(
+            `${outdir}/workflow_output/Final_Outputs/beta_diversity/bray_variance_table_GLAmpSeq.csv`,
+          )
+            ? Papa.parse(
+                fs
+                  .readFileSync(
+                    `${outdir}/workflow_output/Final_Outputs/beta_diversity/bray_variance_table_GLAmpSeq.csv`,
+                  )
+                  .toString(),
+                { delimiter: ',', header: true, skipEmptyLines: true },
+              ).data
+            : [],
         },
         'Euclidean distance': {
           plots: [
@@ -414,9 +440,12 @@ const generateWorkflowResult = proj => {
       result.differential_abundance.ANCOMBC2.plots = []
       result.differential_abundance.DESeq2.plots = []
       const plotReg = /_(.*).png$/
+      let plots = null
       let plotDir =
         'workflow_output/Final_Outputs/differential_abundance/ancombc1'
-      let plots = fs.readdirSync(`${outdir}/${plotDir}`)
+      plots = fs.existsSync(`${outdir}/${plotDir}`)
+        ? fs.readdirSync(`${outdir}/${plotDir}`)
+        : []
       plots.forEach(plot => {
         if (plotReg.test(plot)) {
           result.differential_abundance.ANCOMBC1.plots.push(
@@ -425,7 +454,9 @@ const generateWorkflowResult = proj => {
         }
       })
       plotDir = 'workflow_output/Final_Outputs/differential_abundance/ancombc2'
-      plots = fs.readdirSync(`${outdir}/${plotDir}`)
+      plots = fs.existsSync(`${outdir}/${plotDir}`)
+        ? fs.readdirSync(`${outdir}/${plotDir}`)
+        : []
       plots.forEach(plot => {
         if (plotReg.test(plot)) {
           result.differential_abundance.ANCOMBC2.plots.push(
@@ -434,7 +465,9 @@ const generateWorkflowResult = proj => {
         }
       })
       plotDir = 'workflow_output/Final_Outputs/differential_abundance/deseq2'
-      plots = fs.readdirSync(`${outdir}/${plotDir}`)
+      plots = fs.existsSync(`${outdir}/${plotDir}`)
+        ? fs.readdirSync(`${outdir}/${plotDir}`)
+        : []
       plots.forEach(plot => {
         if (plotReg.test(plot)) {
           result.differential_abundance.DESeq2.plots.push(
