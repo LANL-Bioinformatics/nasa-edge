@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import React, { useState, useMemo } from 'react'
-import { Button, ButtonGroup } from 'reactstrap'
+import { Button, ButtonGroup, Badge } from 'reactstrap'
 import { MaterialReactTable } from 'material-react-table'
 import { ThemeProvider } from '@mui/material'
 import { theme } from 'src/edge/um/common/tableUtil'
@@ -140,9 +140,9 @@ export const DifferentialAbundance = (props) => {
       )}
       <br></br>
       <br></br>
-      <span className="edge-link-large" onClick={() => setTable1Open(!table1Open)}>
+      <Badge style={{ cursor: 'pointer' }} size="sm" color="info" pill onClick={() => setTable1Open(!table1Open)}>
         Sample Info
-      </span>
+      </Badge>
       {table1Open && (
         <>
           {props.result[selectedButton]['Sample Info'] ? (
@@ -159,9 +159,9 @@ export const DifferentialAbundance = (props) => {
         </>
       )}
       <br></br>
-      <span className="edge-link-large" onClick={() => setTable2Open(!table2Open)}>
+      <Badge style={{ cursor: 'pointer' }} size="sm" color="success" pill onClick={() => setTable2Open(!table2Open)}>
         Pairwise Contrasts
-      </span>
+      </Badge>
       {table2Open && (
         <>
           {props.result[selectedButton]['Pairwise Contrasts'] ? (
@@ -178,11 +178,13 @@ export const DifferentialAbundance = (props) => {
         </>
       )}
       <br></br>
-      <span className="edge-link-large" onClick={() => setTable3Open(!table3Open)}>
+      <Badge style={{ cursor: 'pointer' }} size="sm" color="warning" pill onClick={() => setTable3Open(!table3Open)}>
         Differential Abundance
-      </span>
+      </Badge>
       {table3Open && (
         <>
+        <br></br>
+        <br></br>
           {selectedButton === buttons[0] && (
             <>
               <ThemeProvider theme={theme}>
