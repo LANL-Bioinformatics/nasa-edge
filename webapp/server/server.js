@@ -5,13 +5,13 @@ const helmet = require('helmet')
 const bodyParser = require('body-parser')
 const fs = require('fs')
 const fileUpload = require('express-fileupload')
-const mongoose = require('mongoose')
 const passport = require('passport')
 const path = require('path')
 const cron = require('node-cron')
 const swaggerUi = require('swagger-ui-express')
 const swaggerSpec = require('./edge-api/swagger/swaggerSpec')
 const logger = require('./utils/logger')
+const { connectDB, closeDB, isDbConnected } = require('./utils/db')
 const indexRouter = require('./indexRouter')
 const indexWorkflowRouter = require('./workflow/indexRouter')
 const { fileUploadMonitor } = require('./crons/uploadMonitor')
@@ -66,6 +66,23 @@ app.use(bodyParser.json())
 app.use(passport.initialize())
 // Passport config
 require('./edge-api/utils/passport')(passport)
+// Health check endpoint
+// Must stay in front of the static/catch-all handlers below, otherwise the
+// React index.html is served instead and the check always reports HTTP 200.
+app.get('/health', (req, res) => {
+  const healthCheck = {
+    status: isDbConnected() ? 'UP' : 'DOWN',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    services: {
+      // readyState 1 means connected
+      database: isDbConnected() ? 'UP' : 'DOWN',
+    },
+  }
+  // 503 Service Unavailable when a critical check fails
+  res.status(isDbConnected() ? 200 : 503).json(healthCheck)
+})
+
 // APIs
 app.use('/api', indexRouter)
 // workflow APIs
@@ -181,55 +198,32 @@ if (config.NODE_ENV === 'production') {
   })
 }
 
-// Health check endpoint
-app.get('/health', async (req, res) => {
-  const healthCheck = {
-    status: 'UP',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    services: {
-      database: 'DOWN',
-    },
-  }
-
-  try {
-    // Check if the database connection is alive (readyState 1 means connected)
-    if (mongoose.connection.readyState === 1) {
-      healthCheck.services.database = 'UP'
-    } else {
-      throw new Error('Database not connected')
-    }
-
-    // If all checks pass, return HTTP 200
-    res.status(200).json(healthCheck)
-  } catch (error) {
-    // If any critical check fails, mark the master status as DOWN
-    healthCheck.status = 'DOWN'
-    res.status(503).json(healthCheck) // 503 Service Unavailable
-  }
-})
-
 const runApp = async () => {
   try {
-    // Connect to MongoDB
-    const db = `mongodb://${config.DATABASE.SERVER_HOST}:${config.DATABASE.SERVER_PORT}/${config.DATABASE.NAME}`
-    const dbOptions = {
-      authSource: 'admin',
-      user: config.DATABASE.USERNAME,
-      pass: config.DATABASE.PASSWORD,
-    }
-    mongoose.set('strictQuery', false)
-    mongoose.connect(db, dbOptions)
-    logger.info(`Successfully connected to database ${db}`)
-    // start server
-    app.listen(config.APP.SERVER_PORT, () =>
-      logger.info(
-        `HTTP ${config.NODE_ENV} server up and running on port ${config.APP.SERVER_PORT} !`,
-      ),
-    )
+    // Connect to MongoDB before serving anything
+    await connectDB('appserver')
   } catch (err) {
-    logger.error(err)
+    logger.error(
+      `appserver: could not connect to the database, exiting: ${err.message}`,
+    )
+    process.exit(1)
   }
+  // start server
+  app.listen(config.APP.SERVER_PORT, () =>
+    logger.info(
+      `HTTP ${config.NODE_ENV} server up and running on port ${config.APP.SERVER_PORT} !`,
+    ),
+  )
 }
+
+process.on('unhandledRejection', err => {
+  logger.error(`appserver: unhandled rejection: ${err && err.message}`)
+})
+
+process.on('SIGTERM', async () => {
+  logger.info('appserver: SIGTERM received, closing database connection')
+  await closeDB()
+  process.exit(0)
+})
 
 runApp()

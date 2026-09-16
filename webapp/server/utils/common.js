@@ -281,6 +281,21 @@ const pidIsRunning = pid => {
   try {
     // a signal of 0 can be used to test for the existence of a process.
     process.kill(pid, 0)
+    // kill(pid, 0) SUCCEEDS for a zombie (defunct) process — it stays in the
+    // process table until reaped by its parent. A failed local workflow whose
+    // detached shell was never waited on leaves exactly that, so treating it as
+    // "running" wedges the job in the 'running' state forever. Treat a Linux 'Z'
+    // state as NOT running so the monitor can move it to failed/complete.
+    try {
+      const stat = fs.readFileSync(`/proc/${pid}/stat`, 'utf8')
+      // /proc/<pid>/stat is "<pid> (comm) <state> ..."; comm may contain spaces
+      // and parens, so key off the LAST ')' and take the next token.
+      if (stat.slice(stat.lastIndexOf(')') + 1).trim().charAt(0) === 'Z') {
+        return false
+      }
+    } catch (statErr) {
+      // no /proc (non-Linux) or a read race — fall back to the kill(0) result
+    }
     return true
   } catch (e) {
     return false

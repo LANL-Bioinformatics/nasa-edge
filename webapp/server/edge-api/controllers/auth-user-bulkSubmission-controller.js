@@ -10,6 +10,17 @@ const {
 const logger = require('../../utils/logger')
 const config = require('../../config')
 
+// Promisified express-fileupload move. file.mv(dest, cb) returns undefined, so
+// `await file.mv(...)` does not wait, and a `throw` inside the callback runs on a
+// later tick — escaping the surrounding try/catch and killing the worker, which the
+// client sees as a 405. Wrapping it makes failures catchable (clean 500) and makes
+// the response wait until the file is actually on disk.
+const mvAsync = (f, dest) =>
+  new Promise((resolve, reject) => {
+    f.mv(dest, err => (err ? reject(err) : resolve()))
+  })
+
+
 const sysError = config.APP.API_ERROR
 
 // Create a bulkSubmission
@@ -48,12 +59,8 @@ const addOne = async (req, res) => {
     if (req.files) {
       const { file } = req.files
       const mvTo = `${bulkHome}/${file.name}`
-      file.mv(`${mvTo}`, err => {
-        if (err) {
-          throw new Error('Failed to save uploaded file')
-        }
-        logger.debug(`upload to: ${mvTo}`)
-      })
+      await mvAsync(file, `${mvTo}`)
+      logger.debug(`upload to: ${mvTo}`)
     }
 
     const newBulkSubmission = new BulkSubmission({

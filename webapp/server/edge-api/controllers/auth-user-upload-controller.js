@@ -56,11 +56,14 @@ const addOne = async (req, res) => {
 
     // save uploaded file
     const { file } = req.files
-    await file.mv(`${uploadHome}`, err => {
-      if (err) {
-        logger.error(err)
-        throw err
-      }
+    await new Promise((resolve, reject) => {
+      file.mv(`${uploadHome}`, err => {
+        if (err) {
+          logger.error(err)
+          return reject(err)
+        }
+        return resolve()
+      })
     })
     logger.debug(`upload: ${uploadHome}`)
     // add to DB
