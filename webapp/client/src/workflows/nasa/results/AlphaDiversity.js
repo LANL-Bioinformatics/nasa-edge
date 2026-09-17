@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { Badge } from 'reactstrap'
 import { JsonTable } from 'src/edge/common/Tables'
 import config from 'src/config'
 
@@ -53,9 +54,15 @@ export const AlphaDiversity = (props) => {
           )}
           <br></br>
           <br></br>
-          <span className="edge-link-large" onClick={() => setTable1Open(!table1Open)}>
+          <Badge
+            style={{ cursor: 'pointer' }}
+            size="sm"
+            color="info"
+            pill
+            onClick={() => setTable1Open(!table1Open)}
+          >
             Metric Statistics
-          </span>
+          </Badge>
           {table1Open && (
             <>
               {props.result['statistics'] ? (
@@ -73,9 +80,15 @@ export const AlphaDiversity = (props) => {
             </>
           )}
           <br></br>
-          <span className="edge-link-large" onClick={() => setTable2Open(!table2Open)}>
+          <Badge
+            style={{ cursor: 'pointer' }}
+            size="sm"
+            color="success"
+            pill
+            onClick={() => setTable2Open(!table2Open)}
+          >
             Metric Summary
-          </span>
+          </Badge>
           {table2Open && (
             <>
               {props.result['summary'] ? (

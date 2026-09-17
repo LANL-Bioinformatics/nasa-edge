@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { Button, ButtonGroup } from 'reactstrap'
+import { useState } from 'react'
+import { Button, ButtonGroup, Badge } from 'reactstrap'
 import { JsonTable } from 'src/edge/common/Tables'
 import config from 'src/config'
 
@@ -79,9 +79,15 @@ export const BetaDiversity = (props) => {
           )}
           <br></br>
           <br></br>
-          <span className="edge-link-large" onClick={() => setTable1Open(!table1Open)}>
+          <Badge
+            style={{ cursor: 'pointer' }}
+            size="sm"
+            color="info"
+            pill
+            onClick={() => setTable1Open(!table1Open)}
+          >
             Adonis Statistics
-          </span>
+          </Badge>
           {table1Open && (
             <>
               {props.result[selectedButton]['adonis statistics'] ? (
@@ -98,9 +104,15 @@ export const BetaDiversity = (props) => {
             </>
           )}
           <br></br>
-          <span className="edge-link-large" onClick={() => setTable2Open(!table2Open)}>
+          <Badge
+            style={{ cursor: 'pointer' }}
+            size="sm"
+            color="success"
+            pill
+            onClick={() => setTable2Open(!table2Open)}
+          >
             Variance Statistics
-          </span>
+          </Badge>
           {table2Open && (
             <>
               {props.result[selectedButton]['variance statistics'] ? (
