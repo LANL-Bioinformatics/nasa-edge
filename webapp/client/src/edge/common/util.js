@@ -2,6 +2,7 @@ import { Announcement } from '@mui/icons-material'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { colors } from 'src/util'
+import { isProtectedRequest, isRedirectingToLogin, redirectToLogin } from './session'
 
 export const apis = {
   publicProjects: '/api/public/projects',
@@ -58,6 +59,18 @@ export const setAuthToken = (token) => {
     delete axios.defaults.headers.common['Authorization']
   }
 }
+
+// A token can be unexpired but rejected after a signing-secret rotation.
+axios.interceptors.response.use(
+  (response) => response,
+  (err) => {
+    if (err.response?.status === 401 && isProtectedRequest(err.config?.url)) {
+      setAuthToken(false)
+      redirectToLogin()
+    }
+    return Promise.reject(err)
+  },
+)
 
 // post data
 export const postData = (url, params) => {
@@ -157,6 +170,7 @@ export const fetchFile = (url) => {
 
 // action notification
 export const notify = (type, msg, timeout) => {
+  if (isRedirectingToLogin()) return
   if (!timeout) timeout = 2000
   if (type === 'success') {
     toast.success(msg, {
@@ -212,7 +226,8 @@ export const popupWindow = (url, windowName, win, w, h) => {
 
 // validators
 export const isValidProjectName = (name) => {
-  const regexp = new RegExp(/^[a-zA-Z0-9\-_.]{3,30}$/)
+  // allow letters, numbers, dash, underscore, dot, space and length between 3 and 30
+  const regexp = new RegExp(/^[a-zA-Z0-9\-_. ]{3,30}$/)
   return regexp.test(name.trim())
 }
 

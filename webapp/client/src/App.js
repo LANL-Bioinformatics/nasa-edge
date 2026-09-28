@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -6,7 +6,7 @@ import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 
 import { setUser, logout } from 'src/redux/reducers/edge/userSlice'
-import { jwtDecode } from 'jwt-decode'
+import { readSession, redirectToLogin } from 'src/edge/common/session'
 import { setAuthToken } from 'src/edge/common/util'
 
 // Containers
@@ -16,34 +16,32 @@ const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('')
   const storedTheme = useSelector((state) => state.theme)
   const dispatch = useDispatch()
+  const [sessionReady, setSessionReady] = useState(false)
 
   useEffect(() => {
     // setColorMode(storedTheme)
     setColorMode('light')
-    // Check for token to keep user logged in
-    if (localStorage.jwtToken) {
-      // Set auth token header auth
-      const token = localStorage.jwtToken
+    const token = localStorage.getItem('jwtToken')
+    const profile = readSession(token)
+    if (profile) {
       setAuthToken(token)
-      // Decode token and get user info and exp
-      const decoded = jwtDecode(token)
-      // Set user and isAuthenticated
-      dispatch(
-        setUser({
-          isAuthenticated: true,
-          profile: decoded,
-        }),
-      )
+      dispatch(setUser({ isAuthenticated: true, profile }))
     } else {
       dispatch(logout())
+      if (token) redirectToLogin()
     }
+    setSessionReady(true)
     //logout all tabs
-    window.addEventListener('storage', (e) => {
+    const handleStorage = (e) => {
       if (e.key === 'jwtToken' && e.oldValue && !e.newValue) {
         dispatch(logout())
       }
-    })
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!sessionReady) return <CSpinner color="primary" variant="grow" />
 
   return (
     <Router>
