@@ -1,6 +1,6 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilSpeedometer, cilGrid, cilCloudUpload, cilCursor } from '@coreui/icons'
+import { cilHome, brandSet, cilGrid, cilCloudUpload, cilCursor } from '@coreui/icons'
 import { CNavItem, CNavTitle } from '@coreui/react'
 
 const _nav = [
@@ -8,7 +8,15 @@ const _nav = [
     component: CNavItem,
     name: 'Home',
     to: '/home',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Documentation',
+    to: 'https://nasa-edge-documentation.readthedocs.io/en/latest/',
+    icon: <CIcon icon={brandSet.cibReadTheDocs} customClassName="nav-icon" />,
+    target: '_blank',
+    rel: 'noopener noreferrer',
   },
   {
     component: CNavItem,

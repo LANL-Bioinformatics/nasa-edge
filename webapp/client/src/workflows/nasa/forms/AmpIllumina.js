@@ -185,6 +185,7 @@ export const AmpIllumina = (props) => {
                 isValidFileInput={isValidFileInput}
                 text={workflows[workflowName].inputs['input_file'].text}
                 tooltip={workflows[workflowName].inputs['input_file'].tooltip}
+                tooltipClickable={true}
                 enableInput={workflows[workflowName].inputs['input_file']['fileInput'].enableInput}
                 placeholder={workflows[workflowName].inputs['input_file']['fileInput'].placeholder}
                 dataSources={workflows[workflowName].inputs['input_file']['fileInput'].dataSources}

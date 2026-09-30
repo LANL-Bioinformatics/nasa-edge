@@ -16,15 +16,15 @@ export const workflows = {
           {
             text: 'Accession',
             value: 'accession',
-            detail: `<b>Start with OSD or GLDS accession as input</b><br/>
-          <span style="font-size: 0.9rem; color: grey;">The OSD or GLDS accession number specifying the <a href='https://osdr.nasa.gov/bio/repo/search?q=&data_source=cgene,alsda&data_type=study' target='_blank' rel="noreferrer" >OSDR</a> dataset to process, e.g. OSD-487 or GLDS-487
-          Note: Not all datasets have the same OSD and GLDS number, so make sure the correct OSD or GLDS number is specified.</span>`,
+            detail: `<b>Start with OSD or GLDS accession as input</b> <span style="font-size: 0.9rem; color: grey;"> (click the <a href='https://youtu.be/cF1XhMMZizc' target='_blank' rel="noreferrer" >Run the Amplicon Sequencing Workflow on OSDR Data</a> link to watch the tutorial)<br/>
+            The OSD or GLDS accession number specifying the <a href='https://osdr.nasa.gov/bio/repo/search?q=&data_source=cgene,alsda&data_type=study' target='_blank' rel="noreferrer" >OSDR</a> dataset to process, e.g. OSD-487 or GLDS-487
+            Note: Not all datasets have the same OSD and GLDS number, so make sure the correct OSD or GLDS number is specified.</span>`,
           },
           {
             text: 'Runsheet CSV file',
             value: 'input_file',
-            detail: `<b>Start with a runsheet csv file as input</b><br/>
-            <span style="font-size: 0.9rem; color: grey;"> A single-end or paired-end runsheet csv file containing assay metadata for each sample,
+            detail: `<b>Start with a runsheet csv file as input</b> <span style="font-size: 0.9rem; color: grey;">(click the <a href='https://youtu.be/2_UOo_sjmw8' target='_blank' rel="noreferrer" >Run the Amplicon Sequencing Workflow on non-OSDR Data</a> link to watch the tutorial)<br/>
+            A single-end or paired-end runsheet csv file containing assay metadata for each sample,
             including sample_id, forward (path to forward read), [reverse (path to reverse read, for paired-end only),] paired (boolean, TRUE | FALSE),
             groups (specifies sample treatment group name). Please see the <a href='https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/main/examples/runsheet' target='_blank' rel="noreferrer" >runsheet </a> in this repository for examples on how to format this file.
             <br/><span style="font-style: italic;">Note: If using an uploaded file, just add the file name without the local path.</span></span>`,
@@ -33,6 +33,7 @@ export const workflows = {
       },
       accession: {
         text: 'Accession',
+        tooltip: 'Specify the OSD number of the dataset you want to analyze, e.g. “OSD-267”',
         value: '',
         textInput: {
           placeholder: '(Required) OSD or GLDS accession number',
@@ -45,6 +46,10 @@ export const workflows = {
       },
       input_file: {
         text: 'Runsheet CSV',
+        tooltip: `Create a runsheet csv file by following the specifications detailed <a href="https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/main/examples/runsheet" target="_blank" rel="noreferrer" style="color:yellow;">here</a> (
+        you may also download a <a href="https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/blob/main/examples/runsheet/SE_file.csv" target="_blank" rel="noreferrer" style="color:yellow;">single-end</a> or
+        <a href="https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/blob/main/examples/runsheet/PE_file.csv" target="_blank" rel="noreferrer" style="color:yellow;">paired-end</a> example runsheet and populate it with the info for your samples).
+        Upload the completed runsheet by navigating to “My Uploads” in the top panel, then select the uploaded runsheet using the drop-down menu.`,
         value: null,
         display: null,
         fileInput: {
@@ -97,7 +102,8 @@ export const workflows = {
       },
       trim_primers: {
         text: 'Trim Primers',
-        tooltip: 'Whether primers should be trimmed (type: string, default: "TRUE")',
+        tooltip:
+          'Whether primers should be trimmed (type: string, default: "TRUE"). If input data already has primers removed, change to “FALSE”.',
         value: 'TRUE',
         display: 'TRUE',
         options: [
@@ -107,7 +113,7 @@ export const workflows = {
       },
       primers_linked: {
         text: 'Primers Linked',
-        tooltip: 'Whether forward and reverse primers are linked (type: string, default: "TRUE")',
+        tooltip: `Whether forward and reverse primers are linked (type: string, default: "TRUE"). Change this to “FALSE” if the reads are shorter than the amplicon such that only one primer appears in each read, or if you want to keep reads that only contain the 5’ primer.`,
         value: 'TRUE',
         display: 'TRUE',
         options: [
@@ -118,7 +124,7 @@ export const workflows = {
       anchored_primers: {
         text: 'Anchor Primers',
         tooltip:
-          'Whether primers are anchored at the start of reads (type: string, default: "TRUE")',
+          'Whether primers are anchored at the start of reads (type: string, default: "TRUE"). Change this to “FALSE” if the primers are expected to appear somewhere other than the start of the reads.',
         value: 'TRUE',
         display: 'TRUE',
         options: [
@@ -140,7 +146,8 @@ export const workflows = {
       },
       discard_untrimmed: {
         text: 'Discard Untrimmed',
-        tooltip: 'Whether to discard untrimmed reads (type: string, default: "TRUE")',
+        tooltip:
+          'Whether to discard untrimmed reads (type: string, default: "TRUE"). If input data were already trimmed, change to “FALSE”.',
         value: 'TRUE',
         display: 'TRUE',
         options: [
@@ -150,7 +157,9 @@ export const workflows = {
       },
       F_primer: {
         text: 'Forward primer',
-        tooltip: 'Forward primer sequence (type: string)',
+        tooltip: `Forward primer sequence (type: string). If processing an OSD dataset,
+        this sequence can be found in the “Parameter Value: Primer Info” column of the assay table
+        for the respective dataset on <a href="https://osdr.nasa.gov/bio/repo/" target="_blank" rel="noreferrer"  style="color:yellow;">OSDR</a>.`,
         value: '',
         textInput: {
           placeholder: '(Required) Must be 1-200 bases long, IUPAC nucleotide codes only',
@@ -162,7 +171,9 @@ export const workflows = {
       },
       R_primer: {
         text: 'Reverse primer',
-        tooltip: 'Reverse primer sequence (type: string)',
+        tooltip: `Reverse primer sequence (type: string). If processing an OSD dataset, this sequence can be found in
+        the “Parameter Value: Primer Info” column of the assay table for the respective dataset
+        on <a href="https://osdr.nasa.gov/bio/repo/" target="_blank" rel="noreferrer" style="color:yellow;">OSDR</a>.`,
         value: '',
         textInput: {
           placeholder: '(Required) Must be 1-200 bases long, IUPAC nucleotide codes only',
@@ -175,7 +186,7 @@ export const workflows = {
       left_trunc: {
         text: 'Left Trunc',
         tooltip:
-          'Truncate forward reads after this many bases. Reads shorter than this are discarded (type: integer, default: 0)',
+          'Truncate forward reads after this many bases. Reads shorter than this are discarded (type: integer, default: 0). If the quality of the input data is poor at the start of the reads (as evident by fastqc assessment), set this value to specify the number of poor quality bases to remove from the beginning of each read.',
         value: 0,
         rangeInput: {
           defaultValue: 0,
@@ -187,7 +198,7 @@ export const workflows = {
       right_trunc: {
         text: 'Right Trunc',
         tooltip:
-          'Truncate reverse reads after this many bases. Reads shorter than this are discarded (type: integer, default: 0)',
+          'Truncate reverse reads after this many bases. Reads shorter than this are discarded (type: integer, default: 0). If the quality of the input data is poor at the end of the reads (as evident by fastqc assessment), set this value to specify the number of poor quality bases to remove from the end of each read.',
         value: 0,
         rangeInput: {
           defaultValue: 0,
@@ -198,7 +209,8 @@ export const workflows = {
       },
       left_maxEE: {
         text: 'Left maxEE',
-        tooltip: 'Maximum expected errors allowed in forward reads (type: integer, default: 1)',
+        tooltip:
+          'Maximum expected errors allowed in forward reads (type: integer, default: 1). If the quality of the forward reads is poor, consider changing this value to 2.',
         value: 1,
         rangeInput: {
           defaultValue: 1,
@@ -209,7 +221,8 @@ export const workflows = {
       },
       right_maxEE: {
         text: 'Right maxEE',
-        tooltip: 'Maximum expected errors allowed in reverse reads (type: integer, default: 1)',
+        tooltip:
+          'Maximum expected errors allowed in reverse reads (type: integer, default: 1). If the quality of the reverse reads is poor, consider changing this value to 2.',
         value: 1,
         rangeInput: {
           defaultValue: 1,
