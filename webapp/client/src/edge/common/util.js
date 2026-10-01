@@ -225,9 +225,12 @@ export const popupWindow = (url, windowName, win, w, h) => {
 }
 
 // validators
-export const isValidProjectName = (name) => {
-  // allow letters, numbers, dash, underscore, dot, space and length between 3 and 30
-  const regexp = new RegExp(/^[a-zA-Z0-9\-_. ]{3,30}$/)
+export const isValidProjectName = (name, optional, pattern) => {
+  if (optional && name.trim() === '') {
+    return true
+  }
+  // default regex: allow letters, numbers, dash, underscore, dot, space and length between 3 and 30
+  const regexp = new RegExp(pattern ? pattern : /^[a-zA-Z0-9\-_. ]{3,30}$/)
   return regexp.test(name.trim())
 }
 

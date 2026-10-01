@@ -56,25 +56,80 @@ export const Project = (props) => {
         name={'projectName'}
         setParams={setTextInput}
         defaultValue={''}
-        text={components[componentName].params['projectName'].text}
-        showErrorTooltip={components[componentName].params['projectName'].showErrorTooltip}
-        isOptional={components[componentName].params['projectName'].isOptional}
-        note={components[componentName].params['projectName'].note}
-        placeholder={components[componentName].params['projectName'].placeholder}
-        errMessage={components[componentName].params['projectName'].errMessage}
-        isValidTextInput={isValidProjectName}
+        text={
+          props.projectNameText
+            ? props.projectNameText
+            : components[componentName].params['projectName'].text
+        }
+        showErrorTooltip={
+          props.projectNameShowErrorTooltip
+            ? props.projectNameShowErrorTooltip
+            : components[componentName].params['projectName'].showErrorTooltip
+        }
+        isOptional={
+          props.projectNameIsOptional
+            ? props.projectNameIsOptional
+            : components[componentName].params['projectName'].isOptional
+        }
+        note={props.note ? props.note : components[componentName].params['projectName'].note}
+        placeholder={
+          props.projectNamePlaceholder
+            ? props.projectNamePlaceholder
+            : components[componentName].params['projectName'].placeholder
+        }
+        errMessage={
+          props.projectNameErrMessage
+            ? props.projectNameErrMessage
+            : components[componentName].params['projectName'].errMessage
+        }
+        isValidTextInput={
+          props.projectNameIsValidTextInput ? props.projectNameIsValidTextInput : isValidProjectName
+        }
+        pattern={props.projectNamePattern ? props.projectNamePattern : null}
+        tooltip={
+          props.projectNameTooltip
+            ? props.projectNameTooltip
+            : components[componentName].params['projectName'].tooltip
+        }
+        tooltipClickable={
+          props.projectNameTooltipClickable ? props.projectNameTooltipClickable : false
+        }
       />
       <br></br>
       <TextInput
         name={'projectDesc'}
         setParams={setTextInput}
         defaultValue={''}
-        text={components[componentName].params['projectDesc'].text}
-        isOptional={components[componentName].params['projectDesc'].isOptional}
-        placeholder={components[componentName].params['projectDesc'].placeholder}
-        isValidTextInput={() => {
-          return true
-        }}
+        text={
+          props.projectDescText
+            ? props.projectDescText
+            : components[componentName].params['projectDesc'].text
+        }
+        isOptional={
+          props.projectDescIsOptional
+            ? props.projectDescIsOptional
+            : components[componentName].params['projectDesc'].isOptional
+        }
+        placeholder={
+          props.projectDescPlaceholder
+            ? props.projectDescPlaceholder
+            : components[componentName].params['projectDesc'].placeholder
+        }
+        isValidTextInput={
+          props.projectDescIsValidTextInput
+            ? props.projectDescIsValidTextInput
+            : () => {
+                return true
+              }
+        }
+        tooltip={
+          props.projectDescTooltip
+            ? props.projectDescTooltip
+            : components[componentName].params['projectDesc'].tooltip
+        }
+        tooltipClickable={
+          props.projectDescTooltipClickable ? props.projectDescTooltipClickable : false
+        }
       />
     </>
   )
