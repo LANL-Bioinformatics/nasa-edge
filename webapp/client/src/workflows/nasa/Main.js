@@ -149,7 +149,12 @@ const Main = (props) => {
         <div className="clearfix">
           <h4 className="pt-3">Run AmpIllumina Workflow</h4>
           <hr />
-          <Project setParams={setProject} />
+          <Project
+            setParams={setProject}
+            projectNameErrMessage={'Invalid project name.'}
+            projectNameTooltip="Name for your project, e.g. 'Plant microbiome', 'OSD-267 re-run'. <br/>Required, at 3 but less than 30 characters. <br/>Only alphabets, numbers, dashs, dots, underscore and spaces are allowed in the name."
+            projectDescTooltip="Short description of your project, e.g. '16S Amplicon data from A. thaliana plant roots grown in lunar regolith'"
+          />
 
           <br></br>
           {workflow && workflowList[workflow].info && (
