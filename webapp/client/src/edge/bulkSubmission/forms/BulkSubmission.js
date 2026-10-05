@@ -139,7 +139,32 @@ const BulkSubmission = (props) => {
             <div className="clearfix">
               <h4 className="pt-3">Bulk Submission</h4>
               <hr />
-              <Project setParams={setProject} text="Name" />
+              <Project
+                setParams={setProject}
+                projectNameText={props.projectNameText ? props.projectNameText : 'Name'}
+                projectNamePattern={props.projectNamePattern ? props.projectNamePattern : null}
+                projectNameTooltip={props.projectNameTooltip ? props.projectNameTooltip : null}
+                projectNameErrMessage={
+                  props.projectNameErrMessage ? props.projectNameErrMessage : null
+                }
+                projectNameTooltipClickable={
+                  props.projectNameTooltipClickable ? props.projectNameTooltipClickable : false
+                }
+                projectDescText={props.projectDescText ? props.projectDescText : 'Description'}
+                projectDescIsOptional={
+                  props.projectDescIsOptional ? props.projectDescIsOptional : true
+                }
+                projectDescTooltip={props.projectDescTooltip ? props.projectDescTooltip : null}
+                projectDescTooltipClickable={
+                  props.projectDescTooltipClickable ? props.projectDescTooltipClickable : false
+                }
+                projectDescErrMessage={
+                  props.projectDescErrMessage ? props.projectDescErrMessage : null
+                }
+                projectDescIsValidTextInput={
+                  props.projectDescIsValidTextInput ? props.projectDescIsValidTextInput : false
+                }
+              />
               <br></br>
               <b>Workflow</b>
               {props.workflowOptions.length > 1 ? (
