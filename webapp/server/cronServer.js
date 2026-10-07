@@ -20,6 +20,7 @@ const {
 const {
   projectDeletionMonitor,
   projectStatusMonitor,
+  projectFailedMonitor,
   projectRerunMonitor,
 } = require('./crons/projectMonitors')
 const {
@@ -96,6 +97,11 @@ cron.schedule(
 cron.schedule(
   config.CRON.SCHEDULES.PROJECT_RERUN_MONITOR,
   whenDbReady('projectRerunMonitor', projectRerunMonitor),
+)
+// monitor project failed on every day at 12am
+cron.schedule(
+  config.CRON.SCHEDULES.PROJECT_FAILED_MONITOR,
+  whenDbReady('projectFailedMonitor', projectFailedMonitor),
 )
 // monitor project deletion every day at 10pm
 cron.schedule(

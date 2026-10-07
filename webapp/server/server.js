@@ -27,6 +27,7 @@ const {
 const {
   projectDeletionMonitor,
   projectStatusMonitor,
+  projectFailedMonitor,
   projectRerunMonitor,
 } = require('./crons/projectMonitors')
 const {
@@ -164,6 +165,10 @@ if (config.NODE_ENV === 'production') {
   // monitor project status on every 1 minute
   cron.schedule(config.CRON.SCHEDULES.PROJECT_STATUS_MONITOR, async () => {
     await projectStatusMonitor()
+  })
+  // monitor project failed on every day at 12am
+  cron.schedule(config.CRON.SCHEDULES.PROJECT_FAILED_MONITOR, async () => {
+    await projectFailedMonitor()
   })
   // monitor project rerun on every 1 minute
   cron.schedule(config.CRON.SCHEDULES.PROJECT_RERUN_MONITOR, async () => {

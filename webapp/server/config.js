@@ -319,6 +319,9 @@ const config = {
     // Number of days for which the system will preserve a project after a user opts to delete it.
     PROJECT_DELETION_GRACE_PERIOD_DAYS:
       makeIntIfDefined(process.env.PROJECT_DELETION_GRACE_PERIOD_DAYS) || 7,
+    // Number of days for which the system will wait before marking a project as failed.
+    PROJECT_FAILURE_GRACE_PERIOD_DAYS:
+      makeIntIfDefined(process.env.PROJECT_FAILURE_GRACE_PERIOD_DAYS) || 30,
     // Cron job schedules:
     // Reference: https://crontab.guru/ (cron schedule decoder)
     SCHEDULES: {
@@ -352,6 +355,9 @@ const config = {
       // monitor project deletion every day at 10pm
       PROJECT_DELETION_MONITOR:
         process.env.CRON_PROJECT_DELETION_MONITOR_SCHEDULE || '0 22 * * *',
+      // monitor project failed on every day at 12am
+      PROJECT_FAILED_MONITOR:
+        process.env.CRON_PROJECT_FAILED_MONITOR_SCHEDULE || '0 0 * * *',
       // monitor bulk submission requests on every 3 minutes
       BULKSUBMISSION_MONITOR:
         process.env.CRON_BULKSUBMISSION_MONITOR_SCHEDULE || '0-59/3 * * * *',

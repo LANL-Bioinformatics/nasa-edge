@@ -48,6 +48,30 @@ const projectStatusMonitor = async () => {
   }
 }
 
+const projectFailedMonitor = async () => {
+  logger.debug('project failed monitor')
+  try {
+    // mark failed projects after failureGracePeriod
+    const failureGracePeriod = dayjs().subtract(
+      config.CRON.PROJECT_FAILURE_GRACE_PERIOD_DAYS,
+      'days',
+    )
+    const projs = await Project.find({
+      status: 'failed',
+      updated: { $lte: failureGracePeriod },
+    })
+    let i
+    for (i = 0; i < projs.length; i += 1) {
+      const { code } = projs[i]
+      logger.info(`mark project as failed: ${code}`)
+      projs[i].status = 'failed'
+      projs[i].save()
+    }
+  } catch (err) {
+    logger.error(`projectFailedMonitor failed:${err}`)
+  }
+}
+
 const projectDeletionMonitor = async () => {
   logger.debug('project deletion monitor')
   try {
@@ -149,6 +173,7 @@ const projectRerunMonitor = async () => {
 
 module.exports = {
   projectStatusMonitor,
+  projectFailedMonitor,
   projectDeletionMonitor,
   projectRerunMonitor,
 }
