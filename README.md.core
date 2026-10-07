@@ -16,6 +16,7 @@ EDGE Core is a full-stack application consisting of:
 - **Project Management**: Create and manage genomic analysis projects
 - **Bulk Submissions**: Process multiple samples in batch operations
 - **Workflow Orchestration**: Execute Nextflow and Cromwell-based workflows
+- **Durable Job Runner**: Optional HTTP job service for tools that run outside the web server, with idempotent submission, polling, and cancellation
 - **File Management**: Upload and organize analysis data
 - **Database Backups**: Automated database backup system
 - **Email Notifications**: SMTP-based notifications for workflow status
@@ -46,6 +47,13 @@ EDGE Core is a full-stack application consisting of:
 - **Tables**: Material React Table
 - **Date Handling**: Moment.js
 
+### Job runner
+- **Runtime**: Python 3.10+ (required by FastAPI and uvicorn)
+- **API**: FastAPI served by uvicorn
+- **Validation**: Pydantic models
+- **State**: SQLite via `sqlite3` (standard library)
+- **Testing**: pytest with `fastapi.testclient`
+
 ### Workflows
 - **Nextflow**: Scalable workflow engine for genomics
 - **Cromwell**: Workflow management system supporting WDL
@@ -70,6 +78,9 @@ edge-core/
 │       ├── vite.config.mjs  # Vite configuration
 │       ├── src/             # React components
 │       └── public/          # Static assets
+├── job_runner/              # Shared durable job-runner library (Python)
+│   ├── edge_job_runner/     # store, executor, HTTP server, tooling
+│   └── tests/               # Library test suite
 ├── workflows/
 │   ├── Nextflow/            # Nextflow pipeline definitions
 │   ├── Cromwell/            # Cromwell workflow definitions
@@ -94,6 +105,10 @@ edge-core/
 - **MongoDB** Community Edition or compatible
 - **npm** (comes with Node.js)
 - **pm2** (for production deployment)
+- **Python** 3.10 or higher plus the dependencies in
+  [`job_runner/requirements.txt`](./job_runner/requirements.txt), only to run or
+  test the job-runner library in [`job_runner/`](./job_runner). The web
+  application itself does not need either.
 
 ### Quick Start
 
@@ -206,7 +221,30 @@ MAX_UPLOAD_SIZE=5000000000  # 5GB
 
 # Workflow
 WORKFLOW_ENGINE=nextflow  # or cromwell
+
+# Nextflow execution: "direct" runs the CLI here, "runner" submits to a
+# job-runner service. Inferred as "runner" when a nextflow runner URL is set.
+NEXTFLOW_MODE=direct
+# Optional ssh prefix used by direct mode to reach a scheduler login node.
+# NEXTFLOW_SLURM_SSH=ssh user@login-node
+
+# Execution for workflows not managed by Nextflow or Cromwell:
+# "pid" spawns a detached child process, "runner" submits to a job runner.
+LOCAL_EXECUTION_MODE=pid
+
+# Job runners. <NAME> matches the runner a workflow declares, or
+# NEXTFLOW_RUNNER_NAME for Nextflow workflows.
+# NEXTFLOW_RUNNER_NAME=nextflow
+# NEXTFLOW_RUNNER_URL=http://nextflow-runner:7001/v1
+# RUNNER_SERVICES=nextflow=http://nextflow-runner:7001/v1
+RUNNER_API_TOKEN_FILE=/run/secrets/runner_api_token
+RUNNER_REQUEST_TIMEOUT_MS=10000
+RUNNER_SUBMISSION_STALE_MS=60000
 ```
+
+See [`webapp/server/.env.example`](./webapp/server/.env.example) for the
+authoritative list; `webapp/server/config.js` is where each variable is read and
+defaulted.
 
 ### Client Environment Variables
 
@@ -259,6 +297,67 @@ Run a Cromwell workflow:
 java -jar cromwell.jar run workflows/Cromwell/sra2fastq/main.wdl
 ```
 
+## Job Runner
+
+Workflows can run either in the web server's own process or in a separate
+container that owns the scientific tool. The second path uses a durable HTTP job
+runner, whose shared half lives in [`job_runner/`](./job_runner) and is
+documented in [`job_runner/README.md`](./job_runner/README.md). It is a FastAPI
+application served by uvicorn.
+
+Downstream applications supply only a `ToolDefinition` describing how their own
+command line is built. Durable state, process supervision, idempotent
+submission, cancellation, and the HTTP contract are shared and identical
+everywhere.
+
+### Execution modes
+
+Two settings choose where work runs. Both default to in-process execution, so an
+existing deployment is unaffected until a runner is configured.
+
+| Variable | Values | Default | Applies to |
+| --- | --- | --- | --- |
+| `NEXTFLOW_MODE` | `direct`, `runner` | `direct`, or `runner` when a nextflow runner URL is set | Nextflow workflows |
+| `LOCAL_EXECUTION_MODE` | `pid`, `runner` | `pid` | Workflows not managed by Nextflow or Cromwell |
+
+`direct` invokes the Nextflow CLI from the web server, optionally prefixed by
+`NEXTFLOW_SLURM_SSH` to reach a scheduler login node. `pid` spawns a tool as a
+detached child process and tracks it by PID. `runner` submits to a job-runner
+service instead, which is required when the web server image does not contain
+the tool.
+
+Jobs are routed by the backend that created them, not by the current setting, so
+changing a mode does not orphan work already in flight.
+
+### Registering runners
+
+```env
+# Per-runner base URL; <NAME> matches the runner a workflow declares
+NEXTFLOW_RUNNER_URL=http://nextflow-runner:7001/v1
+BIOAI_RUNNER_URL=http://bioai-cli:7002/v1
+
+# Or register several at once
+RUNNER_SERVICES=nextflow=http://nextflow-runner:7001/v1,bioai=http://bioai-cli:7002/v1
+
+# Shared bearer token; the file form keeps it out of the environment
+RUNNER_API_TOKEN_FILE=/run/secrets/runner_api_token
+```
+
+A workflow in `workflow/util.js` declares `runner: '<name>'` for a tool, or
+`nextflow_main` for a Nextflow workflow. Nextflow workflows resolve their runner
+from `NEXTFLOW_RUNNER_NAME`, which is the deployed service name and is
+independent of `RUNNER_TOOL` inside the runner container.
+
+### Extension points
+
+Applications override these in their own `workflow/util.js`; the core versions
+are no-ops:
+
+| Hook | Purpose |
+| --- | --- |
+| `generateRunnerInput(proj, projectConf, jobId)` | Tool-specific submission input, merged over the common `outputPath`/`logPath`/`donePath` |
+| `getWorkflowEnvironment(proj)` | Environment overrides for a `pid`-mode child process, e.g. a Conda `PATH` |
+
 ## Monitoring & Logging
 
 ### View Application Logs
@@ -293,6 +392,21 @@ npm test
 ```bash
 npm test -- --coverage
 ```
+
+### Run Job Runner Tests
+
+```bash
+cd job_runner
+pip install -r requirements.txt
+python3 -m pytest tests/
+```
+
+The API tests drive the ASGI application through `fastapi.testclient`, so they
+bind no sockets.
+
+These cover the store, executor, HTTP API, and the `ToolDefinition` contract
+using fixture tools. Application tool definitions are tested in their own
+repositories.
 
 ## Email Configuration
 

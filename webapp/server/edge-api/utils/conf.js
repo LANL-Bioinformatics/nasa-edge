@@ -12,7 +12,9 @@ const projectStatus = [
 ]
 const uploadStatus = ['live', 'delete']
 const jobStatus = ['Submitted', 'Running', 'Failed', 'Aborted', 'Succeeded']
-const queueTypes = ['local', 'cromwell', 'nextflow']
+// 'local' is the PID-tracked execution mode; 'runner' covers any job delegated
+// to a job-runner service (the specific service is in Job.runner).
+const queueTypes = ['local', 'runner', 'cromwell', 'nextflow']
 const bulkSubmissionStatus = [
   'in queue',
   'running',

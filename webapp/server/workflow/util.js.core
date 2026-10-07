@@ -5,20 +5,32 @@ const config = require('../config')
 const workflowConfig = require('./config')
 
 const cromwellWorkflows = []
-const nextflowWorkflows = ['sra2fastq']
 const nextflowConfigs = {
   profiles: `${config.NEXTFLOW.WORKFLOW_DIR}/common/profiles.nf`,
   nf_reports: `${config.NEXTFLOW.WORKFLOW_DIR}/common/nf_reports.tmpl`,
 }
 
+// Each entry declares how a workflow is executed:
+//   nextflow_main     workflow entrypoint (.nf). Its presence is what makes a
+//                     workflow a nextflow workflow, independent of NEXTFLOW_MODE.
+//   nextflow_profile  comma-separated profile names, passed as -profile
+//   config_tmpl       template rendered to <project>/nextflow.config, or omit
+//                     when the workflow is driven only by profiles/params
+//   runner            name of the job-runner service for non-nextflow tools.
+//                     Nextflow workflows do not need it: they are routed by
+//                     NEXTFLOW_MODE, and the service name comes from
+//                     NEXTFLOW_RUNNER_NAME.
+// Note: nextflow_main must not embed CLI flags. Both backends build the command
+// line, so flags belong in their own fields.
 const workflowList = {
   sra2fastq: {
     outdir: 'output/sra2fastq',
     report: 'nextflow/report.html',
     log: 'nextflow/.nextflow.log',
-    nextflow_main: process.env.NEXTFLOW_MAIN
-      ? `${process.env.NEXTFLOW_MAIN} -profile local`
-      : `${config.NEXTFLOW.WORKFLOW_DIR}/sra2fastq/nextflow/main.nf -profile local`,
+    nextflow_main:
+      process.env.NEXTFLOW_MAIN ||
+      `${config.NEXTFLOW.WORKFLOW_DIR}/sra2fastq/nextflow/main.nf`,
+    nextflow_profile: 'local',
     config_tmpl: `${config.NEXTFLOW.WORKFLOW_DIR}/sra2fastq/workflow_config.tmpl`,
   },
   runFaQCs: {
@@ -31,6 +43,20 @@ const workflowList = {
     zip_output_cmd: 'cd <PROJECT_HOME>/output && tar -czf <ZIP_OUTPUT> ReadsQC',
   },
 }
+
+// A workflow is a nextflow workflow if it has an entrypoint. Deliberately not
+// keyed on `runner`: that would drop these workflows whenever nextflow runs in
+// direct mode, silently stalling their monitor.
+const nextflowWorkflows = Object.keys(workflowList).filter(workflow =>
+  Boolean(workflowList[workflow].nextflow_main),
+)
+
+// Everything else is driven by the local monitor, in either pid or runner mode.
+const localWorkflows = Object.keys(workflowList).filter(
+  workflow =>
+    !workflowList[workflow].nextflow_main &&
+    !cromwellWorkflows.includes(workflow),
+)
 
 // eslint-disable-next-line no-unused-vars
 const generateNextflowWorkflowParams = async (projHome, projectConf, proj) => {
@@ -67,7 +93,10 @@ const generateWorkflowResult = proj => {
 const checkFlagFile = (proj, jobQueue) => {
   const projHome = `${config.IO.PROJECT_BASE_DIR}/${proj.code}`
   const outDir = `${projHome}/${workflowList[proj.type].outdir}`
-  if (jobQueue === 'local') {
+  // Both execution modes touch a .done flag when the command completes; the
+  // runner does so via input.donePath. 'worker' is the deprecated alias for
+  // 'runner' and is accepted so pre-rename callers keep working.
+  if (['local', 'runner', 'worker'].includes(jobQueue)) {
     const flagFile = `${projHome}/.done`
     if (!fs.existsSync(flagFile)) {
       return false
@@ -82,6 +111,37 @@ const checkFlagFile = (proj, jobQueue) => {
   }
   return true
 }
+
+/**
+ * Builds the runner-specific `input` for a non-nextflow job submission.
+ *
+ * This is the app-specific extension point: utils/runner.js merges the returned
+ * object over the common `{ outputPath, logPath, donePath }`. Each derived app
+ * overrides this to describe how its own tools are invoked. The core has no
+ * non-nextflow runners, so it returns nothing.
+ *
+ * @param proj {object} The project document
+ * @param projectConf {object} The parsed project conf.json
+ * @param jobId {string} The job handle
+ * @return {object} Additional submission input
+ */
+// eslint-disable-next-line no-unused-vars
+const generateRunnerInput = (proj, projectConf, jobId) => ({})
+
+/**
+ * Returns environment variable overrides for a workflow spawned in pid mode.
+ *
+ * App-specific extension point. Workflows whose toolchain lives outside the web
+ * server's own environment (e.g. in a conda env) return the PATH additions they
+ * need. Returning a falsy value inherits the server environment unchanged.
+ *
+ * Only consulted in pid mode: job runners own their container's environment.
+ *
+ * @param proj {object} The project document
+ * @return {object|undefined} Environment overrides, or undefined
+ */
+// eslint-disable-next-line no-unused-vars
+const getWorkflowEnvironment = proj => undefined
 
 const getWorkflowCommand = proj => {
   const projHome = `${config.IO.PROJECT_BASE_DIR}/${proj.code}`
@@ -152,11 +212,14 @@ const zipProjectOutputs = async proj => {
 
 module.exports = {
   cromwellWorkflows,
+  localWorkflows,
   nextflowWorkflows,
   nextflowConfigs,
   workflowList,
   generateNextflowWorkflowParams,
+  generateRunnerInput,
   generateWorkflowResult,
+  getWorkflowEnvironment,
   checkFlagFile,
   getWorkflowCommand,
   validateBulkSubmissionInput,

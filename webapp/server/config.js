@@ -13,6 +13,7 @@
  * - https://developer.mozilla.org/en-US/docs/Glossary/Falsy
  */
 
+const fs = require('fs')
 const path = require('path')
 
 /**
@@ -55,6 +56,121 @@ const makeIntIfDefined = val =>
  */
 const makeFloatIfDefined = val =>
   typeof val === 'string' ? parseFloat(val) : undefined
+
+/**
+ * Returns the trimmed contents of a file, or an empty string when the file is
+ * unset or unreadable.
+ *
+ * Used to read secrets that are delivered as mounted files (Docker/Kubernetes
+ * secrets) rather than as environment variables. A missing file is not fatal
+ * here: the consuming code decides whether an empty credential is acceptable.
+ *
+ * @param file {string|undefined} Path to the secret file
+ * @return {string} The secret, or an empty string
+ */
+const readSecretFile = file => {
+  if (!file) return ''
+  try {
+    return fs.readFileSync(file, 'utf8').trim()
+  } catch (error) {
+    return ''
+  }
+}
+
+/**
+ * Resolves how nextflow workflows are executed.
+ *
+ * - `direct` runs the `nextflow` CLI from the web server itself, optionally
+ *   prefixed by NEXTFLOW_SLURM_SSH to reach a scheduler login node. This is the
+ *   original behavior.
+ * - `runner` submits the workflow to a job-runner HTTP service.
+ *
+ * When NEXTFLOW_MODE is unset the mode is inferred: configuring a nextflow
+ * runner URL is an unambiguous statement of intent, and such deployments often
+ * have no nextflow CLI in the web server image, where defaulting to `direct`
+ * would fail at submission time. Otherwise `direct` is retained so existing
+ * deployments are unaffected.
+ *
+ * @param val {string|undefined} The configured mode
+ * @return {string} Either 'direct' or 'runner'
+ */
+const makeNextflowMode = val => {
+  if (val === undefined || val === null || String(val).trim() === '') {
+    return process.env.NEXTFLOW_RUNNER_API_BASE_URL ||
+      process.env.NEXTFLOW_RUNNER_URL
+      ? 'runner'
+      : 'direct'
+  }
+  const mode = String(val).trim().toLowerCase()
+  if (!['direct', 'runner'].includes(mode)) {
+    throw new Error(
+      `NEXTFLOW_MODE must be "direct" or "runner", received "${val}"`,
+    )
+  }
+  return mode
+}
+
+/**
+ * Resolves the execution mode used for workflows that run outside of a
+ * workflow manager.
+ *
+ * - `pid` spawns the tool as a detached child process of the web server and
+ *   tracks it by PID. This is the original behavior and remains the default.
+ * - `runner` submits the job to a job-runner HTTP service.
+ *
+ * @param val {string|undefined} The configured mode
+ * @return {string} Either 'pid' or 'runner'
+ */
+const makeExecutionMode = val => {
+  const mode = (val || 'pid').trim().toLowerCase()
+  if (!['pid', 'runner'].includes(mode)) {
+    throw new Error(
+      `LOCAL_EXECUTION_MODE must be "pid" or "runner", received "${val}"`,
+    )
+  }
+  return mode
+}
+
+/**
+ * Builds the job-runner service registry from the environment.
+ *
+ * Each entry maps a runner name (which is stored on `Job.runner`) to the base
+ * URL of the job-runner service that executes it. `RUNNER_SERVICES` allows
+ * deployments to register additional runners without a code change, using the
+ * format `name=url,name=url`. Per-runner `<NAME>_RUNNER_URL` variables take
+ * precedence so a single runner can be repointed in isolation.
+ *
+ * `NEXTFLOW_RUNNER_API_BASE_URL` is also honored, registered under
+ * NEXTFLOW_RUNNER_NAME. It predates the generic registry and is already present
+ * in deployed, bind-mounted .env files, so it must keep working.
+ *
+ * @param nextflowRunnerName {string} Name to register the nextflow runner under
+ * @return {object} A map of runner name to `{ BASE_URL }`
+ */
+const makeRunnerServices = nextflowRunnerName => {
+  const services = {}
+  const register = (name, url) => {
+    if (!name || !url) return
+    services[name.trim().toLowerCase()] = { BASE_URL: url.trim() }
+  }
+  // Nextflow-specific form, registered first so the generic forms can override.
+  register(nextflowRunnerName, process.env.NEXTFLOW_RUNNER_API_BASE_URL)
+  // Declarative registry, e.g. RUNNER_SERVICES=nextflow=http://nf:7001,bioai=http://bioai:7002
+  ;(process.env.RUNNER_SERVICES || '').split(',').forEach(entry => {
+    const separator = entry.indexOf('=')
+    if (separator > 0) {
+      register(entry.slice(0, separator), entry.slice(separator + 1))
+    }
+  })
+  // Per-runner overrides win over the declarative registry.
+  Object.keys(process.env).forEach(key => {
+    const matched = /^([A-Z0-9_]+)_RUNNER_URL$/.exec(key)
+    if (matched) {
+      register(matched[1], process.env[key])
+    }
+  })
+  return services
+}
 
 const DEFAULT_AI_SUMMARY_SYSTEM_CONTENT = `you are an genomic experts who writes concise briefings from metagenomic data.
 
@@ -115,8 +231,19 @@ const config = {
       process.env.CLIENT_BASE_DIR || path.join(CLIENT_BASE_DIR, 'build'),
   },
   NEXTFLOW: {
+    // How nextflow workflows are executed. See makeNextflowMode above.
+    // Defaults to 'direct' so existing deployments are unaffected.
+    MODE: makeNextflowMode(process.env.NEXTFLOW_MODE),
+    // Nextflow executor. Valid values: 'local', 'slurm'.
     EXECUTOR: process.env.NEXTFLOW_EXECUTOR || 'local',
+    // Optional ssh prefix used to reach a scheduler login node.
+    // In 'direct' mode the web server prefixes its nextflow commands with this.
+    // In 'runner' mode the job runner is responsible for the ssh hop and reads
+    // its own NEXTFLOW_SLURM_SSH; this value is then unused.
     SLURM_SSH: process.env.NEXTFLOW_SLURM_SSH || '',
+    // Name of the job-runner service that executes nextflow workflows. Exists
+    // because deployments register the service under different names.
+    RUNNER_NAME: process.env.NEXTFLOW_RUNNER_NAME || 'nextflow',
     // Max allowed number of jobs in nextflow.
     NUM_JOBS_MAX: makeIntIfDefined(process.env.NEXTFLOW_NUM_JOBS_MAX) || 100000,
     // Total size of the input files allowed per job.
@@ -153,7 +280,38 @@ const config = {
       process.env.CROMWELL_CONF || path.join(CROMWELL_BASE_DIR, 'conf.json'),
   },
   LOCAL: {
-    NUM_JOBS_MAX: makeIntIfDefined(process.env.LOCAL_NUM_JOBS_MAX) || 2,
+    // How workflows that are not managed by cromwell/nextflow are executed.
+    // See makeExecutionMode above.
+    EXECUTION_MODE: makeExecutionMode(process.env.LOCAL_EXECUTION_MODE),
+    NUM_JOBS_MAX:
+      makeIntIfDefined(process.env.RUNNER_NUM_JOBS_MAX) ||
+      makeIntIfDefined(process.env.LOCAL_NUM_JOBS_MAX) ||
+      2,
+  },
+  RUNNER: {
+    // Shared bearer token presented to every job-runner service. Prefer the
+    // file form so the secret is not visible in the process environment.
+    // The NEXTFLOW_RUNNER_API_TOKEN* names are honored for deployments that
+    // configured the nextflow runner before the generic registry existed.
+    API_TOKEN:
+      process.env.RUNNER_API_TOKEN ||
+      readSecretFile(process.env.RUNNER_API_TOKEN_FILE) ||
+      process.env.NEXTFLOW_RUNNER_API_TOKEN ||
+      readSecretFile(process.env.NEXTFLOW_RUNNER_API_TOKEN_FILE),
+    // Timeout for the (fast) control-plane calls to a job runner. Submitting a
+    // job only enqueues it, so this does not bound workflow runtime.
+    REQUEST_TIMEOUT_MS:
+      makeIntIfDefined(process.env.RUNNER_REQUEST_TIMEOUT_MS) ||
+      makeIntIfDefined(process.env.NEXTFLOW_RUNNER_API_TIMEOUT_MS) ||
+      10000,
+    // How long a project may sit in 'processing' with no job record before the
+    // monitor assumes the submitting process died and requeues it.
+    SUBMISSION_STALE_MS:
+      makeIntIfDefined(process.env.RUNNER_SUBMISSION_STALE_MS) || 60000,
+    // Runner name -> base URL. See makeRunnerServices above.
+    SERVICES: makeRunnerServices(
+      process.env.NEXTFLOW_RUNNER_NAME || 'nextflow',
+    ),
   },
   CRON: {
     // Port number on which the cron web server will listen for HTTP requests.

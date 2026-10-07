@@ -10,6 +10,7 @@ const {
 const {
   generateRunStats: generateNextflowRunStats,
 } = require('../../utils/nextflow')
+const { isNextflowRunner } = require('../../utils/runner')
 const { generateWorkflowResult } = require('../../workflow/util')
 const config = require('../../config')
 
@@ -161,7 +162,9 @@ const getProjectRunStats = async (code, type, req) => {
       }
       const projHome = `${config.IO.PROJECT_BASE_DIR}/${code}`
       const statsJson = `${projHome}/run_stats.json`
-      if (job.queue === 'nextflow') {
+      // Nextflow stats come from the trace file regardless of which backend
+      // submitted the job.
+      if (job.queue === 'nextflow' || isNextflowRunner(job.runner)) {
         await generateNextflowRunStats(proj)
       } else if (job.queue === 'cromwell') {
         generateCromwellRunStats(proj)

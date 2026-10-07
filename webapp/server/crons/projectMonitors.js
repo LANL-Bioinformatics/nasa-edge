@@ -7,7 +7,7 @@ const logger = require('../utils/logger')
 const { projectStatusSender } = require('../mailers/senders')
 const config = require('../config')
 
-const projectMonitor = async () => {
+const projectStatusMonitor = async () => {
   logger.debug('project status monitor')
   try {
     // notify complete/failed projects
@@ -86,7 +86,7 @@ const projectDeletionMonitor = async () => {
       })
     }
   } catch (err) {
-    logger.error(`projectMonitor failed:${err}`)
+    logger.error(`projectDeletionMonitor failed:${err}`)
   }
 }
 
@@ -148,7 +148,7 @@ const projectRerunMonitor = async () => {
 }
 
 module.exports = {
-  projectMonitor,
+  projectStatusMonitor,
   projectDeletionMonitor,
   projectRerunMonitor,
 }

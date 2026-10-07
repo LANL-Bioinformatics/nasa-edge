@@ -13,7 +13,7 @@ const {
 
 const config = require('../config')
 
-const cromWellWorkflowMonitor = async () => {
+const cromwellWorkflowMonitor = async () => {
   logger.debug('Cromwell workflow monitor')
   try {
     // only process one job at each time based on job updated time
@@ -147,11 +147,11 @@ const cromWellWorkflowMonitor = async () => {
         logger.error(err)
       })
   } catch (err) {
-    logger.error(`cromWellWorkflowMonitor failed:${err}`)
+    logger.error(`cromwellWorkflowMonitor failed:${err}`)
   }
 }
 
-const cromWellJobMonitor = async () => {
+const cromwellJobMonitor = async () => {
   logger.debug('cromwell job monitor')
   try {
     // only process one job at each time based on job updated time
@@ -185,6 +185,6 @@ const cromWellJobMonitor = async () => {
 }
 
 module.exports = {
-  cromWellWorkflowMonitor,
-  cromWellJobMonitor,
+  cromwellWorkflowMonitor,
+  cromwellJobMonitor,
 }

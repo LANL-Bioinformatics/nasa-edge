@@ -17,8 +17,28 @@ const jobSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // PID of the spawned process. Only set for jobs executed in 'pid' mode.
     pid: {
       type: Number,
+    },
+    // Name of the job-runner service executing this job, e.g. 'nextflow'.
+    // Only set when queue is 'runner'. Not an enum: deployments register their
+    // own runners via config.RUNNER.SERVICES.
+    runner: {
+      type: String,
+    },
+    // Terminal details reported by the job runner.
+    exitCode: {
+      type: Number,
+    },
+    error: {
+      type: String,
+    },
+    startedAt: {
+      type: Date,
+    },
+    finishedAt: {
+      type: Date,
     },
     inputSize: {
       type: Number,

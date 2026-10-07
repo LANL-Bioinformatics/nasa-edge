@@ -31,6 +31,23 @@ const sleep = ms =>
 const dbUri = () =>
   `mongodb://${config.DATABASE.SERVER_HOST}:${config.DATABASE.SERVER_PORT}/${config.DATABASE.NAME}`
 
+/**
+ * Strips credentials from a connection string so it is safe to log.
+ *
+ * Credentials normally travel in the driver options rather than the URI, but a
+ * deployment can still embed `user:password@` in DATABASE_HOST. Never log a URI
+ * without passing it through here: log files are long-lived and often shipped
+ * off-host, so a leaked password there is a real exposure.
+ *
+ * Matches up to the last '@' before the path so that passwords containing '@'
+ * are removed in full, and only inside the authority so an '@' in a query
+ * string is left alone.
+ *
+ * @param {string} uri connection string, possibly containing credentials
+ * @returns {string} the same string with any userinfo replaced by '***'
+ */
+const redactUri = uri => uri.replace(/\/\/[^/]*@/, '//***@')
+
 const dbOptions = () => {
   const options = { serverSelectionTimeoutMS: SERVER_SELECTION_TIMEOUT_MS }
   // Only send credentials when they are configured. Sending empty credentials
@@ -120,6 +137,7 @@ const watchConnection = label => {
  */
 const connectDB = async (label = 'server') => {
   const uri = dbUri()
+  const safeUri = redactUri(uri)
   mongoose.set('strictQuery', false)
   watchConnection(label)
 
@@ -127,11 +145,11 @@ const connectDB = async (label = 'server') => {
     try {
       // eslint-disable-next-line no-await-in-loop
       await mongoose.connect(uri, dbOptions())
-      logger.info(`${label}: Successfully connected to database ${uri}`)
+      logger.info(`${label}: Successfully connected to database ${safeUri}`)
       return
     } catch (err) {
       logger.error(
-        `${label}: database connection attempt ${attempt}/${CONNECT_MAX_ATTEMPTS} to ${uri} failed: ${err.message}`,
+        `${label}: database connection attempt ${attempt}/${CONNECT_MAX_ATTEMPTS} to ${safeUri} failed: ${err.message}`,
       )
       if (attempt === CONNECT_MAX_ATTEMPTS) {
         throw err

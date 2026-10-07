@@ -259,14 +259,28 @@ const execCmd = cmd =>
     })
   })
 
-const spawnCmd = (cmd, outLog) => {
+/**
+ * Spawns a detached shell command, appending its output to a log file.
+ *
+ * @param cmd {string} The command line to run
+ * @param outLog {string} Path to the log file (stdout and stderr are appended)
+ * @param envOverrides {object} [envOverrides] Extra environment variables merged
+ *   over process.env. Used by workflows that need a specific toolchain on PATH
+ *   (e.g. a conda environment) without polluting the web server's own process.
+ * @return {number} The PID of the spawned shell
+ */
+const spawnCmd = (cmd, outLog, envOverrides) => {
   const out = fs.openSync(outLog, 'a')
   const err = fs.openSync(outLog, 'a')
-  const child = spawn(cmd, {
+  const spawnOptions = {
     shell: true, // have to use shell, otherwise the trame instance will be stopped when restarting the webapp
     stdio: ['ignore', out, err], // piping stdout and stderr to out.log
     detached: true,
-  })
+  }
+  if (envOverrides) {
+    spawnOptions.env = { ...process.env, ...envOverrides }
+  }
+  const child = spawn(cmd, spawnOptions)
   child.unref()
   return child.pid
 }
