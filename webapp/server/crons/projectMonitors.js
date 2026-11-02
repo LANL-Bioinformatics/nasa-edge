@@ -24,7 +24,7 @@ const projectStatusMonitor = async () => {
                   projectName: proj.name,
                   projectDesc: proj.desc,
                   projectCreated: proj.created,
-                  projectType: proj.label,
+                  projectType: proj.type,
                   projectStatus: proj.status,
                   projectPageURL: `${config.APP.UI_BASE_URL}/user/project?code=${proj.code}`,
                 }
