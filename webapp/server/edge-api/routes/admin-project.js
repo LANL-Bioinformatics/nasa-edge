@@ -7,20 +7,17 @@ const {
   validationRules: updateValidationRules,
   validate: updateValidate,
 } = require('../validations/project-update-validator')
+const { getAll } = require('../controllers/admin-project-controller')
 const {
   getOne,
-  updateOne,
   getConf,
-  getAll,
   getOutputs,
-  getBatchOutputs,
   getResult,
   getRunStats,
-} = require('../controllers/admin-project-controller')
-const {
   getOutputTreeData,
   downloadOutputs,
   getAISummary,
+  updateOne,
 } = require('../controllers/common-project-controller')
 
 /**
@@ -101,7 +98,7 @@ router.put(
   updateValidationRules(),
   updateValidate,
   async (req, res) => {
-    await updateOne(req, res)
+    await updateOne(req, res, 'admin')
   },
 )
 
@@ -145,7 +142,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getOne(req, res)
+    await getOne(req, res, 'admin')
   },
 )
 
@@ -189,7 +186,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getConf(req, res)
+    await getConf(req, res, 'admin')
   },
 )
 
@@ -233,7 +230,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getOutputs(req, res)
+    await getOutputs(req, res, 'admin')
   },
 )
 
@@ -252,50 +249,6 @@ router.post(
   projectCodeValidate,
   async (req, res) => {
     await downloadOutputs(req, res, 'admin')
-  },
-)
-
-/**
- * @swagger
- * /api/admin/projects/{code}/batch/outputs:
- *   get:
- *     summary: Get output files by code
- *     tags: [Admin]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *      - in: path
- *        name: code
- *        required: true
- *        type: string
- *        value: test
- *        description: The project unique code.
- *     responses:
- *       200:
- *         description: Action successful.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/models/actionSuccessful'
- *       400:
- *         description: Invalid input
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/models/actionFailed'
- *       500:
- *         description: API server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/models/serverError'
- */
-router.get(
-  '/projects/:code/batch/outputs',
-  projectCodeValidationRules(),
-  projectCodeValidate,
-  async (req, res) => {
-    await getBatchOutputs(req, res)
   },
 )
 
@@ -339,7 +292,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getResult(req, res)
+    await getResult(req, res, 'admin')
   },
 )
 
@@ -392,7 +345,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getRunStats(req, res)
+    await getRunStats(req, res, 'admin')
   },
 )
 

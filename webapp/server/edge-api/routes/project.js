@@ -3,15 +3,13 @@ const {
   validationRules: projectCodeValidationRules,
   validate: projectCodeValidate,
 } = require('../validations/project-code-validator')
+const { getAll } = require('../controllers/project-controller')
 const {
-  getAll,
   getOne,
   getConf,
   getOutputs,
   getResult,
   getRunStats,
-} = require('../controllers/project-controller')
-const {
   getOutputTreeData,
   downloadOutputs,
   getAISummary,
@@ -85,7 +83,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getOne(req, res)
+    await getOne(req, res, 'public')
   },
 )
 
@@ -127,7 +125,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getConf(req, res)
+    await getConf(req, res, 'public')
   },
 )
 
@@ -169,7 +167,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getOutputs(req, res)
+    await getOutputs(req, res, 'public')
   },
 )
 
@@ -220,7 +218,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getResult(req, res)
+    await getResult(req, res, 'public')
   },
 )
 
@@ -271,7 +269,7 @@ router.get(
   projectCodeValidationRules(),
   projectCodeValidate,
   async (req, res) => {
-    await getRunStats(req, res)
+    await getRunStats(req, res, 'public')
   },
 )
 

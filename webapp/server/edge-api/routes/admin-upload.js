@@ -3,7 +3,8 @@ const {
   validationRules: updateValidationRules,
   validate: updateValidate,
 } = require('../validations/upload-update-validator')
-const { updateOne, getAll } = require('../controllers/admin-upload-controller')
+const { getAll } = require('../controllers/admin-upload-controller')
+const { updateOne } = require('../controllers/common-upload-controller')
 
 /**
  * @swagger
@@ -83,7 +84,7 @@ router.put(
   updateValidationRules(),
   updateValidate,
   async (req, res) => {
-    await updateOne(req, res)
+    await updateOne(req, res, 'admin')
   },
 )
 

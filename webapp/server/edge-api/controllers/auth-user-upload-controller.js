@@ -2,11 +2,7 @@ const randomize = require('randomatic')
 const fs = require('fs')
 const Upload = require('../models/upload')
 const User = require('../models/user')
-const {
-  updateUpload,
-  getUploadedSize,
-  getUploadFolderOptions,
-} = require('../utils/upload')
+const { getUploadedSize, getUploadFolderOptions } = require('../utils/upload')
 const logger = require('../../utils/logger')
 const config = require('../../config')
 
@@ -112,43 +108,6 @@ const addOne = async (req, res) => {
     })
   } catch (err) {
     logger.error(`Add upload failed: ${err}`)
-
-    return res.status(500).json({
-      message: sysError,
-      success: false,
-    })
-  }
-}
-
-// Update upload
-const updateOne = async (req, res) => {
-  try {
-    logger.debug(`/api/auth-user/uploads update: ${req.params.code}`)
-
-    const query = {
-      status: { $ne: 'delete' },
-      code: { $eq: req.params.code },
-      owner: { $eq: req.user.email },
-    }
-    const upload = await updateUpload(query, req)
-
-    if (!upload) {
-      logger.error(`upload ${req.params.code} not found or access denied.`)
-      return res.status(400).json({
-        error: {
-          upload: `upload ${req.params.code} not found or access denied`,
-        },
-        message: 'Action failed',
-        success: false,
-      })
-    }
-    return res.send({
-      upload,
-      message: 'Action successful',
-      success: true,
-    })
-  } catch (err) {
-    logger.error(`Update upload failed: ${err}`)
 
     return res.status(500).json({
       message: sysError,
@@ -281,7 +240,6 @@ const getAll = async (req, res) => {
 
 module.exports = {
   addOne,
-  updateOne,
   getOwn,
   getInfo,
   getAll,

@@ -13,12 +13,14 @@ const {
 } = require('../validations/bulkSubmission-update-validator')
 const {
   addOne,
+  getOwn,
+} = require('../controllers/auth-user-bulkSubmission-controller')
+const {
   getOne,
   updateOne,
   getConf,
-  getOwn,
   getProjects,
-} = require('../controllers/auth-user-bulkSubmission-controller')
+} = require('../controllers/common-bulkSubmission-controller')
 
 /**
  * @swagger
@@ -141,7 +143,7 @@ router.put(
   updateValidationRules(),
   updateValidate,
   async (req, res) => {
-    await updateOne(req, res)
+    await updateOne(req, res, 'user')
   },
 )
 
@@ -185,7 +187,7 @@ router.get(
   bulkSubmissionCodeValidationRules(),
   bulkSubmissionCodeValidate,
   async (req, res) => {
-    await getOne(req, res)
+    await getOne(req, res, 'user')
   },
 )
 
@@ -229,7 +231,7 @@ router.get(
   bulkSubmissionCodeValidationRules(),
   bulkSubmissionCodeValidate,
   async (req, res) => {
-    await getConf(req, res)
+    await getConf(req, res, 'user')
   },
 )
 
@@ -273,7 +275,7 @@ router.get(
   bulkSubmissionCodeValidationRules(),
   bulkSubmissionCodeValidate,
   async (req, res) => {
-    await getProjects(req, res)
+    await getProjects(req, res, 'user')
   },
 )
 

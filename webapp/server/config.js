@@ -319,7 +319,7 @@ const config = {
     // Number of days for which the system will preserve a project after a user opts to delete it.
     PROJECT_DELETION_GRACE_PERIOD_DAYS:
       makeIntIfDefined(process.env.PROJECT_DELETION_GRACE_PERIOD_DAYS) || 7,
-    // Number of days for which the system will wait before marking a project as failed.
+    // Number of days for which the system will wait before marking a failed project for deletion.
     PROJECT_FAILURE_GRACE_PERIOD_DAYS:
       makeIntIfDefined(process.env.PROJECT_FAILURE_GRACE_PERIOD_DAYS) || 30,
     // Cron job schedules:

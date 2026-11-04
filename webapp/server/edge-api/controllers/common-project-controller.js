@@ -1,3 +1,5 @@
+const fs = require('fs')
+const path = require('path')
 const {
   getProject,
   getProjectConf,
@@ -5,11 +7,14 @@ const {
   getProjectOutputTreeData,
   getProjectResult,
   getProjectRunStats,
+  updateProject,
   zipProjectOutputs,
 } = require('../utils/project')
 const { generateProjectAISummary } = require('../utils/ai-summary')
 const logger = require('../../utils/logger')
 const config = require('../../config')
+const { linkCopyFile } = require('../../utils/common')
+const { workflowList } = require('../../workflow/util')
 
 const sysError = config.APP.API_ERROR
 
@@ -30,13 +35,94 @@ const getOne = async (req, res, type) => {
         success: false,
       })
     }
+    let report = null
+    if (type === 'admin') {
+      // get report/log file if project is failed or complete
+      if (project.status === 'failed' || project.status === 'complete') {
+        const projHome = `${config.IO.PROJECT_BASE_DIR}/${project.code}`
+        // eslint-disable-next-line no-nested-ternary
+        const reportPath = fs.existsSync(
+          `${projHome}/${workflowList[project.type].report}`,
+        )
+          ? `${projHome}/${workflowList[project.type].report}`
+          : fs.existsSync(`${projHome}/${workflowList[project.type].log}`)
+            ? `${projHome}/${workflowList[project.type].log}`
+            : null
+
+        if (reportPath) {
+          // create project directory in EXECUTION_REPORTS if not exist
+          if (
+            !fs.existsSync(`${config.IO.EXECUTION_REPORTS}/${project.code}`)
+          ) {
+            fs.mkdirSync(`${config.IO.EXECUTION_REPORTS}/${project.code}`, {
+              recursive: true,
+            })
+          }
+          if (
+            !fs.existsSync(
+              `${config.IO.EXECUTION_REPORTS}/${project.code}/${path.basename(reportPath)}`,
+            )
+          ) {
+            await linkCopyFile(
+              reportPath,
+              `${config.IO.EXECUTION_REPORTS}/${project.code}`,
+              'link',
+              false,
+            )
+          }
+          report = `${process.env.EXECUTION_REPORTS_API_PATH}/${project.code}/${path.basename(reportPath)}`
+        }
+      }
+    }
+    return res.send({
+      project,
+      report,
+      message: 'Action successful',
+      success: true,
+    })
+  } catch (err) {
+    logger.error(`Get project failed: ${err}`)
+
+    return res.status(500).json({
+      message: sysError,
+      success: false,
+    })
+  }
+}
+
+// Update project
+const updateOne = async (req, res, type) => {
+  try {
+    logger.debug(`/api/${type}/projects update: ${req.params.code}`)
+    let query = { code: { $eq: 'not_found' } }
+    if (type === 'user') {
+      query = {
+        code: { $eq: req.params.code },
+        status: { $ne: 'delete' },
+        owner: { $eq: req.user.email },
+      }
+    } else if (type === 'admin') {
+      query = { code: { $eq: req.params.code }, status: { $ne: 'delete' } }
+    }
+    const project = await updateProject(query, req)
+
+    if (!project) {
+      logger.error(`project ${req.params.code} not found or access denied.`)
+      return res.status(400).json({
+        error: {
+          project: `project ${req.params.code} not found or access denied`,
+        },
+        message: 'Action failed',
+        success: false,
+      })
+    }
     return res.send({
       project,
       message: 'Action successful',
       success: true,
     })
   } catch (err) {
-    logger.error(`Get project failed: ${err}`)
+    logger.error(`Update project failed: ${err}`)
 
     return res.status(500).json({
       message: sysError,
@@ -223,4 +309,5 @@ module.exports = {
   getAISummary,
   getRunStats,
   downloadOutputs,
+  updateOne,
 }

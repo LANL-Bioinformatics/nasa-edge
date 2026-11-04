@@ -304,7 +304,12 @@ const pidIsRunning = pid => {
       const stat = fs.readFileSync(`/proc/${pid}/stat`, 'utf8')
       // /proc/<pid>/stat is "<pid> (comm) <state> ..."; comm may contain spaces
       // and parens, so key off the LAST ')' and take the next token.
-      if (stat.slice(stat.lastIndexOf(')') + 1).trim().charAt(0) === 'Z') {
+      if (
+        stat
+          .slice(stat.lastIndexOf(')') + 1)
+          .trim()
+          .charAt(0) === 'Z'
+      ) {
         return false
       }
     } catch (statErr) {
@@ -381,6 +386,15 @@ const zipFiles = async (outdir, name, filePath, files) => {
   }
   return null
 }
+// Promisified express-fileupload move. file.mv(dest, cb) returns undefined, so
+// `await file.mv(...)` does not wait, and a `throw` inside the callback runs on a
+// later tick — escaping the surrounding try/catch and killing the worker, which the
+// client sees as a 405. Wrapping it makes failures catchable (clean 500) and makes
+// the response wait until the file is actually on disk.
+const mvAsync = (f, dest) =>
+  new Promise((resolve, reject) => {
+    f.mv(dest, err => (err ? reject(err) : resolve()))
+  })
 
 module.exports = {
   write2log,
@@ -397,4 +411,5 @@ module.exports = {
   pidIsRunning,
   linkCopyFile,
   zipFiles,
+  mvAsync,
 }

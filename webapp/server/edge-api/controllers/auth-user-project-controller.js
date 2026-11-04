@@ -2,31 +2,11 @@ const randomize = require('randomatic')
 const fs = require('fs')
 const dayjs = require('dayjs')
 const Project = require('../models/project')
-const {
-  getProject,
-  getProjectConf,
-  updateProject,
-  getProjectOutputs,
-  getProjectBatchOutputs,
-  getProjectResult,
-  getProjectRunStats,
-} = require('../utils/project')
-const { getAllFiles } = require('../../utils/common')
+const { getAllFiles, mvAsync } = require('../../utils/common')
 const { workflowList } = require('../../workflow/util')
 const logger = require('../../utils/logger')
 const config = require('../../config')
 const { localWorkflowMonitor } = require('../../crons/localMonitors')
-
-// Promisified express-fileupload move. file.mv(dest, cb) returns undefined, so
-// `await file.mv(...)` does not wait, and a `throw` inside the callback runs on a
-// later tick — escaping the surrounding try/catch and killing the worker, which the
-// client sees as a 405. Wrapping it makes failures catchable (clean 500) and makes
-// the response wait until the file is actually on disk. 
-const mvAsync = (f, dest) =>
-  new Promise((resolve, reject) => {
-    f.mv(dest, err => (err ? reject(err) : resolve()))
-  })
-
 
 const sysError = config.APP.API_ERROR
 
@@ -110,140 +90,6 @@ const addOne = async (req, res) => {
   } catch (err) {
     logger.error(`Add project failed: ${err}`)
 
-    return res.status(500).json({
-      message: sysError,
-      success: false,
-    })
-  }
-}
-
-// Get project
-const getOne = async (req, res) => {
-  try {
-    logger.debug(`/api/auth-user/projects get: ${req.params.code}`)
-    // find the project owned by user or shared to user or public
-    const project = await getProject(req.params.code, 'user', req.user)
-
-    if (!project) {
-      logger.error(`project ${req.params.code} not found or access denied.`)
-      return res.status(400).json({
-        error: {
-          project: `project ${req.params.code} not found or access denied`,
-        },
-        message: 'Action failed',
-        success: false,
-      })
-    }
-    return res.send({
-      project,
-      message: 'Action successful',
-      success: true,
-    })
-  } catch (err) {
-    logger.error(`Get project failed: ${err}`)
-
-    return res.status(500).json({
-      message: sysError,
-      success: false,
-    })
-  }
-}
-
-// Update project
-const updateOne = async (req, res) => {
-  try {
-    logger.debug(`/api/auth-user/projects update: ${req.params.code}`)
-    const query = {
-      code: { $eq: req.params.code },
-      status: { $ne: 'delete' },
-      owner: { $eq: req.user.email },
-    }
-    const project = await updateProject(query, req)
-
-    if (!project) {
-      logger.error(`project ${req.params.code} not found or access denied.`)
-      return res.status(400).json({
-        error: {
-          project: `project ${req.params.code} not found or access denied`,
-        },
-        message: 'Action failed',
-        success: false,
-      })
-    }
-    return res.send({
-      project,
-      message: 'Action successful',
-      success: true,
-    })
-  } catch (err) {
-    logger.error(`Update project failed: ${err}`)
-
-    return res.status(500).json({
-      message: sysError,
-      success: false,
-    })
-  }
-}
-
-// Get project configuration file
-const getConf = async (req, res) => {
-  try {
-    logger.debug(`/api/auth-user/projects/${req.params.code}/conf`)
-    const conf = await getProjectConf(req.params.code, 'user', req)
-
-    return res.json({
-      conf,
-      message: 'Action successful',
-      success: true,
-    })
-  } catch (err) {
-    logger.error(
-      `/api/auth-user/projects/${req.params.code}/conf failed: ${err}`,
-    )
-    return res.status(500).json({
-      message: sysError,
-      success: false,
-    })
-  }
-}
-
-// Get project result
-const getResult = async (req, res) => {
-  try {
-    logger.debug(`/api/auth-user/projects/${req.params.code}/result`)
-    const result = await getProjectResult(req.params.code, 'user', req)
-
-    return res.json({
-      result,
-      message: 'Action successful',
-      success: true,
-    })
-  } catch (err) {
-    logger.error(
-      `/api/auth-user/projects/${req.params.code}/result failed: ${err}`,
-    )
-    return res.status(500).json({
-      message: sysError,
-      success: false,
-    })
-  }
-}
-
-// Get project runStats
-const getRunStats = async (req, res) => {
-  try {
-    logger.debug(`/api/auth-user/projects/${req.params.code}/runStats`)
-    const runStats = await getProjectRunStats(req.params.code, 'user', req)
-
-    return res.json({
-      runStats,
-      message: 'Action successful',
-      success: true,
-    })
-  } catch (err) {
-    logger.error(
-      `/api/auth-user/projects/${req.params.code}/runStats failed: ${err}`,
-    )
     return res.status(500).json({
       message: sysError,
       success: false,
@@ -414,50 +260,6 @@ const getFiles = async (req, res) => {
   }
 }
 
-// Get project output files
-const getOutputs = async (req, res) => {
-  try {
-    logger.debug(`/api/auth-user/projects/${req.params.code}/outputs`)
-    const files = await getProjectOutputs(req.params.code, 'user', req)
-
-    return res.json({
-      fileData: files,
-      message: 'Action successful',
-      success: true,
-    })
-  } catch (err) {
-    logger.error(
-      `/api/auth-user/projects/${req.params.code}/outputs failed: ${err}`,
-    )
-    return res.status(500).json({
-      message: sysError,
-      success: false,
-    })
-  }
-}
-
-// Get all output files in subprojects
-const getBatchOutputs = async (req, res) => {
-  try {
-    logger.debug(`/api/auth-user/projects/${req.params.code}/batch/outputs`)
-    const files = await getProjectBatchOutputs(req.params.code, 'user', req)
-
-    return res.json({
-      fileData: files,
-      message: 'Action successful',
-      success: true,
-    })
-  } catch (err) {
-    logger.error(
-      `/api/auth-user/projects/${req.params.code}/batch/outputs failed: ${err}`,
-    )
-    return res.status(500).json({
-      message: sysError,
-      success: false,
-    })
-  }
-}
-
 // Find all projects owned by user with type
 const getProjectsByType = async (req, res) => {
   try {
@@ -484,16 +286,9 @@ const getProjectsByType = async (req, res) => {
 
 module.exports = {
   addOne,
-  getOne,
-  updateOne,
-  getConf,
   getOwn,
   getAll,
   getQueue,
   getFiles,
-  getOutputs,
-  getBatchOutputs,
-  getResult,
-  getRunStats,
   getProjectsByType,
 }

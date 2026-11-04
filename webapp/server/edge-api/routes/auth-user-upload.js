@@ -9,11 +9,11 @@ const {
 } = require('../validations/upload-update-validator')
 const {
   addOne,
-  updateOne,
   getOwn,
   getInfo,
   getAll,
 } = require('../controllers/auth-user-upload-controller')
+const { updateOne } = require('../controllers/common-upload-controller')
 
 /**
  * @swagger
@@ -202,7 +202,7 @@ router.put(
   updateValidationRules(),
   updateValidate,
   async (req, res) => {
-    await updateOne(req, res)
+    await updateOne(req, res, 'user')
   },
 )
 
